@@ -11,9 +11,18 @@ public class HealthPack : MonoBehaviour {
         {
             var hit = other.gameObject;
             var health = hit.GetComponent<PlayerHealth>();
-            if (health != null)
-                health.heal(amount);
 
+            if (health != null)
+            {
+                if (health.isLocalPlayer)
+                {
+                    var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
+                    animation.startHealingAnimation(amount);
+                }
+
+                health.heal(amount);
+            }
+            
             Destroy(gameObject);
         }
     }

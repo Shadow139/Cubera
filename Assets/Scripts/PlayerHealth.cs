@@ -12,9 +12,12 @@ public class PlayerHealth : NetworkBehaviour
     public float currentHealth = 100;
     [SyncVar]
     public float currentArmor = 0;
-    [SyncVar]
     public bool hasArmor = false;
 
+    void Update()
+    {
+        HealthStatus();
+    }
 
     void HealthStatus()
     {

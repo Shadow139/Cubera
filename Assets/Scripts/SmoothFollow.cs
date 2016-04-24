@@ -8,17 +8,14 @@ public class SmoothFollow : MonoBehaviour
 
     void Start()
     {
-        //player = GameObject.Find("prfPlayer(Clone)");
         player = CubeMovement.player;
         cameraOffset = transform.position;
-        Debug.Log("cameraOffset " + cameraOffset);
     }
 
     void LateUpdate()
     {
         if (!player)
             player = CubeMovement.player;
-           // player = GameObject.Find("prfPlayer(Clone)");
 
         if (player != null)
             transform.position = player.transform.position + cameraOffset;
@@ -38,8 +35,6 @@ public class SmoothFollow : MonoBehaviour
         transform.RotateAround(new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z), Vector3.up, 90);
         cameraOffset = transform.position - player.transform.position;
         player.GetComponent<CubeMovement>().switchMode(1);
-        Debug.Log("cameraOffset " + cameraOffset);
-
     }
 
     void rotateCameraLeft()
@@ -47,8 +42,6 @@ public class SmoothFollow : MonoBehaviour
         transform.RotateAround(new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z), Vector3.up, -90);
         cameraOffset = transform.position - player.transform.position;
         player.GetComponent<CubeMovement>().switchMode(-1);
-        Debug.Log("cameraOffset " + cameraOffset);
-
     }
 
 }

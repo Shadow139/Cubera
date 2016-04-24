@@ -14,8 +14,16 @@ public class BulletStandardDestroy : MonoBehaviour {
 
         var hit = collision.gameObject;
         var health = hit.GetComponent<PlayerHealth>();
+
         if (health != null)
         {
+            if (health.isLocalPlayer)
+            {
+                var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
+                if (damage > 0.0f)
+                    animation.startDamageAnimation(damage);
+            }
+            
             health.TakeDamage(damage);
         }
         if(destroy)

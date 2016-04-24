@@ -6,7 +6,9 @@ public class CubeMovement : NetworkBehaviour
 {
     public float torque;
     public float jumpSpeed;
-    public GameObject bulletPrefab;
+    public GameObject[] bulletPrefabs;
+    private int bullet = 0;
+    private float oldDamage = 0.0f;
     public Vector3 bulletOffset;
     public Vector3 bulletDirection = Vector3.forward;
     private float lastShot = 0.0f;
@@ -18,6 +20,11 @@ public class CubeMovement : NetworkBehaviour
     private int mode = 0;
     private Vector3 rotateHorizontal = Vector3.back;
     private Vector3 rotateVertical = Vector3.right;
+    private Vector3 forwardForce = Vector3.forward;
+    private Vector3 rightForce = Vector3.right;
+
+    private GameObject ui;
+    private UI uiScript;
 
     public static GameObject player;
 
@@ -25,6 +32,8 @@ public class CubeMovement : NetworkBehaviour
     {
         cam = Camera.main;
         rigidbody = GetComponent<Rigidbody>();
+        ui = GameObject.Find("UI");
+        uiScript = ui.GetComponent<UI>();
     }
 
     void Update()
@@ -36,18 +45,20 @@ public class CubeMovement : NetworkBehaviour
 
         if (Input.GetMouseButton(0))
         {
-            bulletScript = bulletPrefab.GetComponent<BulletStandardDestroy>();
+            bulletScript = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>();
             if (Time.time > bulletScript.rateOfFire + lastShot)
             {
-                CmdFire(bulletOffset, bulletDirection, bulletScript.bulletSpeed);
+                CmdFire(bullet,bulletOffset, bulletDirection, bulletScript.bulletSpeed);
                 lastShot = Time.time;
             }
-
-            if (Input.GetKeyDown(KeyCode.LeftShift))
-            {
-                toggleLethalBullets();
-            }
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            toggleLethalBullets();
+        }
+
+        switchCurrentBullet();
     }
 
     void FixedUpdate()
@@ -58,11 +69,14 @@ public class CubeMovement : NetworkBehaviour
             return;
         }
 
-        float moveHorizontal = Input.GetAxis("Horizontal") * torque * Time.deltaTime;
-        float moveVertical = Input.GetAxis("Vertical") * torque * Time.deltaTime;
+        float moveHorizontal = Input.GetAxis("Horizontal") * torque ;
+        float moveVertical = Input.GetAxis("Vertical") * torque ;
 
         rigidbody.AddTorque(rotateHorizontal * moveHorizontal);
         rigidbody.AddTorque(rotateVertical * moveVertical);
+
+        rigidbody.AddForce(forwardForce * moveVertical * 0.002f);
+        rigidbody.AddForce(rightForce * moveHorizontal * 0.002f);
 
 
         if (isGrounded && Input.GetKeyDown(KeyCode.Space))
@@ -84,16 +98,15 @@ public class CubeMovement : NetworkBehaviour
     }
 
     [Command]
-    void CmdFire(Vector3 offset, Vector3 direction, float speed)
+    void CmdFire(int current, Vector3 offset, Vector3 direction, float speed)
     {
 
         var bullet = (GameObject)Instantiate(
-            bulletPrefab,
+            bulletPrefabs[current],
             transform.position + offset,
             Quaternion.identity);
 
         // Add velocity to the bullet
-        //bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * bulletSpeed;
         bullet.GetComponent<Rigidbody>().velocity = direction * speed;
 
         // Spawn the bullet on the Clients
@@ -145,6 +158,10 @@ public class CubeMovement : NetworkBehaviour
         {
             rotateHorizontal = Vector3.back;
             rotateVertical = Vector3.right;
+
+            forwardForce = Vector3.forward;
+            rightForce = Vector3.right;
+
             bulletOffset = Vector3.forward;
             bulletDirection = Vector3.forward;
         }
@@ -152,6 +169,10 @@ public class CubeMovement : NetworkBehaviour
         {
             rotateHorizontal = Vector3.left;
             rotateVertical = Vector3.back;
+
+            forwardForce = Vector3.right;
+            rightForce = Vector3.back;
+
             bulletOffset = Vector3.right;
             bulletDirection = Vector3.right;
         }
@@ -159,6 +180,10 @@ public class CubeMovement : NetworkBehaviour
         {
             rotateHorizontal = Vector3.forward;
             rotateVertical = Vector3.left;
+
+            forwardForce = Vector3.back;
+            rightForce = Vector3.left;
+
             bulletOffset = Vector3.back;
             bulletDirection = Vector3.back;            
         }
@@ -166,23 +191,43 @@ public class CubeMovement : NetworkBehaviour
         {
             rotateHorizontal = Vector3.right;
             rotateVertical = Vector3.forward;
+
+            forwardForce = Vector3.left;
+            rightForce = Vector3.forward;
+
             bulletOffset = Vector3.left;
             bulletDirection = Vector3.left;
         }
 
     }
 
+    void switchCurrentBullet()
+    {
+        if (Input.GetAxis("Mouse ScrollWheel") > 0) // forward
+ {
+            bullet++;
+        }
+        if (Input.GetAxis("Mouse ScrollWheel") < 0) // back
+ {
+            bullet--;
+        }
+
+        bullet = Mathf.Clamp(bullet,0,bulletPrefabs.Length - 1);
+        uiScript.changeBulletIcon(bullet);
+    }
+
     void toggleLethalBullets()
     {
-        bulletPrefab.GetComponent<BulletStandardDestroy>().destroy = !(bulletPrefab.GetComponent<BulletStandardDestroy>().destroy);
+        bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().destroy = !(bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().destroy);
 
-        if(bulletPrefab.GetComponent<BulletStandardDestroy>().damage > 0)
+        if(bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage > 0)
         {
-            bulletPrefab.GetComponent<BulletStandardDestroy>().damage = 0;
+            oldDamage = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage;
+            bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage = 0;
         }
         else
         {
-            bulletPrefab.GetComponent<BulletStandardDestroy>().damage = 5.0f;
+            bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage = oldDamage;
         }
 
     }
