@@ -6,6 +6,7 @@ public class BulletStandardDestroy : MonoBehaviour {
     public float damage;
     public float bulletSpeed;
     public float rateOfFire;
+    public float bulletOffsetMultiplier;
 
     public bool destroy = true;
 

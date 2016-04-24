@@ -7,12 +7,23 @@ public class PlayerHealth : NetworkBehaviour
 {
     public float maxHealth = 100;
     public float maxArmor = 100;
+    public bool destroyOnDeath;
+
+    private NetworkStartPosition[] spawnPoints;
 
     [SyncVar]
     public float currentHealth = 100;
     [SyncVar]
     public float currentArmor = 0;
     public bool hasArmor = false;
+
+    void Start()
+    {
+        if (isLocalPlayer)
+        {
+            spawnPoints = FindObjectsOfType<NetworkStartPosition>();
+        }
+    }
 
     void Update()
     {
@@ -43,8 +54,15 @@ public class PlayerHealth : NetworkBehaviour
 
         if (currentHealth <= 0)
         {
-            currentHealth = maxHealth;
-            RpcRespawn();
+            if (destroyOnDeath)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                currentHealth = maxHealth;
+                RpcRespawn();
+            }
         }
     }
 
@@ -81,8 +99,14 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (isLocalPlayer)
         {
-            // move back to zero location
-            transform.position = Vector3.zero;
+            Vector3 spawnPoint = Vector3.zero;
+
+            if (spawnPoints != null && spawnPoints.Length > 0)
+            {
+                spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+            }
+
+            transform.position = spawnPoint;
         }
     }
 

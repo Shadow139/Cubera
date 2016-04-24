@@ -103,7 +103,7 @@ public class CubeMovement : NetworkBehaviour
 
         var bullet = (GameObject)Instantiate(
             bulletPrefabs[current],
-            transform.position + offset,
+            transform.position + (offset * bulletPrefabs[current].GetComponent<BulletStandardDestroy>().bulletOffsetMultiplier),
             Quaternion.identity);
 
         // Add velocity to the bullet
