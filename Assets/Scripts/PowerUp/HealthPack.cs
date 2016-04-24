@@ -22,7 +22,9 @@ public class HealthPack : MonoBehaviour {
 
                 health.heal(amount);
             }
-            
+            var respawn = FindObjectOfType<PowerUpSpawner>();
+            respawn.respawn(transform, 15.0f, 30.0f);
+
             Destroy(gameObject);
         }
     }
