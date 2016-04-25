@@ -3,6 +3,7 @@ using System.Collections;
 
 public class BulletStandardDestroy : MonoBehaviour {
 
+    public float maxDamage;
     public float damage;
     public float bulletSpeed;
     public float rateOfFire;

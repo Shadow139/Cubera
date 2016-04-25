@@ -43,7 +43,7 @@ public class CubeMovement : NetworkBehaviour
             return;
         }
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) || Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
         {
             bulletScript = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>();
             if (Time.time > bulletScript.rateOfFire + lastShot)
@@ -53,7 +53,7 @@ public class CubeMovement : NetworkBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.Backspace))
         {
             toggleLethalBullets();
         }
@@ -218,17 +218,20 @@ public class CubeMovement : NetworkBehaviour
 
     void toggleLethalBullets()
     {
-        bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().destroy = !(bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().destroy);
+        foreach(GameObject prefab in bulletPrefabs)
+        {
+            prefab.GetComponent<BulletStandardDestroy>().destroy = !prefab.GetComponent<BulletStandardDestroy>().destroy;
 
-        if(bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage > 0)
-        {
-            oldDamage = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage;
-            bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage = 0;
-        }
-        else
-        {
-            bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>().damage = oldDamage;
-        }
+            if (prefab.GetComponent<BulletStandardDestroy>().damage > 0)
+            {
+                prefab.GetComponent<BulletStandardDestroy>().damage = 0;
+            }
+            else
+            {
+                prefab.GetComponent<BulletStandardDestroy>().damage = prefab.GetComponent<BulletStandardDestroy>().maxDamage;
+            }
+
+        }    
 
     }
 
