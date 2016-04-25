@@ -43,7 +43,7 @@ public class CubeMovement : NetworkBehaviour
             return;
         }
 
-        if (Input.GetMouseButton(0) || Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
+        if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
         {
             bulletScript = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>();
             if (Time.time > bulletScript.rateOfFire + lastShot)
@@ -203,12 +203,24 @@ public class CubeMovement : NetworkBehaviour
 
     void switchCurrentBullet()
     {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            bullet = 0;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            bullet = 1;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            bullet = 2;
+        }
         if (Input.GetAxis("Mouse ScrollWheel") > 0) // forward
- {
+        {
             bullet++;
         }
         if (Input.GetAxis("Mouse ScrollWheel") < 0) // back
- {
+        {
             bullet--;
         }
 
