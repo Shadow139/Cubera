@@ -43,7 +43,7 @@ public class CubeMovement : NetworkBehaviour
             return;
         }
 
-        if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+        if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKeyDown(KeyCode.Joystick1Button10))
         {
             bulletScript = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>();
             if (Time.time > bulletScript.rateOfFire + lastShot)
@@ -53,7 +53,7 @@ public class CubeMovement : NetworkBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Backspace))
+        if (Input.GetKeyDown(KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Joystick1Button3))
         {
             toggleLethalBullets();
         }
@@ -79,7 +79,7 @@ public class CubeMovement : NetworkBehaviour
         rigidbody.AddForce(rightForce * moveHorizontal * 0.002f);
 
 
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
         {
             Jump();
         }

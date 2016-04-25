@@ -20,11 +20,11 @@ public class SmoothFollow : MonoBehaviour
         if (player != null)
             transform.position = player.transform.position + cameraOffset;
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) | Input.GetKeyDown(KeyCode.Joystick1Button5))
         {
             rotateCameraRight();
         }
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.Joystick1Button4))
         {
             rotateCameraLeft();
         }        
