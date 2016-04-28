@@ -269,7 +269,7 @@ public class CubeMovement : NetworkBehaviour
         }
 
         bullet = Mathf.Clamp(bullet,0,bulletPrefabs.Length - 1);
-        if(ui == null)
+        if(ui == null || uiScript == null)
         {
             ui = GameObject.FindGameObjectWithTag("UI");
             uiScript = ui.GetComponent<UI>();
