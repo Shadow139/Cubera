@@ -11,6 +11,13 @@ public class BulletStandardDestroy : MonoBehaviour {
 
     public bool destroy = true;
 
+    public CubeMovement owner;
+
+    void Start()
+    {
+
+    }
+
     void OnCollisionEnter(Collision collision)
     {
 

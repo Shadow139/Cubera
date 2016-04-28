@@ -27,7 +27,7 @@ public class CubeMovement : NetworkBehaviour
     private Vector3 forwardForce = Vector3.forward;
     private Vector3 rightForce = Vector3.right;
 
-    private GameObject ui;
+    public GameObject ui;
     private UI uiScript;
 
     private GameObject mainCamera;
@@ -48,8 +48,9 @@ public class CubeMovement : NetworkBehaviour
         mainCamera = GameObject.FindWithTag("MainCamera");
         mainCamera.SetActive(false);
         rigidbody = GetComponent<Rigidbody>();
-        ui = GameObject.Find("UI");
-        uiScript = ui.GetComponent<UI>();
+        ui = GameObject.FindGameObjectWithTag("UI");
+        //uiScript = ui.GetComponent<UI>();
+        
 
     }
 
@@ -66,6 +67,8 @@ public class CubeMovement : NetworkBehaviour
             if (Time.time > bulletScript.rateOfFire + lastShot)
             {
                 CmdFire(bullet,bulletOffset, bulletDirection, bulletScript.bulletSpeed);
+                //RpcFire(bullet, bulletOffset, bulletDirection, bulletScript.bulletSpeed);
+
                 lastShot = Time.time;
             }
         }
@@ -79,8 +82,8 @@ public class CubeMovement : NetworkBehaviour
         {
             toggleLethalBullets();
         }
-
-        switchCurrentBullet();
+        if(isSwitchingBullet())
+            switchCurrentBullet();
     }
 
     void FixedUpdate()
@@ -123,8 +126,32 @@ public class CubeMovement : NetworkBehaviour
             transform.position + (offset * bulletPrefabs[current].GetComponent<BulletStandardDestroy>().bulletOffsetMultiplier),
             Quaternion.identity);
 
+        BulletStandardDestroy bulletScript = bullet.GetComponent<BulletStandardDestroy>();
+
         // Add velocity to the bullet
         bullet.GetComponent<Rigidbody>().velocity = direction * speed;
+        bulletScript.owner = this;
+
+        // Spawn the bullet on the Clients
+        NetworkServer.Spawn(bullet);
+
+        Destroy(bullet, 5.0f);
+    }
+
+    [ClientRpc]
+    void RpcFire(int current, Vector3 offset, Vector3 direction, float speed)
+    {
+
+        var bullet = (GameObject)Instantiate(
+            bulletPrefabs[current],
+            transform.position + (offset * bulletPrefabs[current].GetComponent<BulletStandardDestroy>().bulletOffsetMultiplier),
+            Quaternion.identity);
+
+        BulletStandardDestroy bulletScript = bullet.GetComponent<BulletStandardDestroy>();
+
+        // Add velocity to the bullet
+        bullet.GetComponent<Rigidbody>().velocity = direction * speed;
+        bulletScript.owner = this;
 
         // Spawn the bullet on the Clients
         NetworkServer.Spawn(bullet);
@@ -242,7 +269,26 @@ public class CubeMovement : NetworkBehaviour
         }
 
         bullet = Mathf.Clamp(bullet,0,bulletPrefabs.Length - 1);
+        if(ui == null)
+        {
+            ui = GameObject.FindGameObjectWithTag("UI");
+            uiScript = ui.GetComponent<UI>();
+        }
+        
         uiScript.changeBulletIcon(bullet);
+    }
+
+    bool isSwitchingBullet()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1) || (Input.GetKeyDown(KeyCode.Alpha2)) || Input.GetKeyDown(KeyCode.Alpha3)
+            || (Input.GetAxis("Mouse ScrollWheel") > 0) || (Input.GetAxis("Mouse ScrollWheel") < 0))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     void toggleLethalBullets()
