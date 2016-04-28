@@ -11,11 +11,15 @@ public class CubeMovement : NetworkBehaviour
     private float oldDamage = 0.0f;
     public Vector3 bulletOffset;
     public Vector3 bulletDirection = Vector3.forward;
+    public Camera cameraPrefab;
+    public Camera miniMapPrefab;
     private float lastShot = 0.0f;
-    
+        
     private Rigidbody rigidbody;
     private BulletStandardDestroy bulletScript;
-    private Camera cam;
+    private GameObject cam;
+    private GameObject miniMap;
+
     private bool isGrounded = false;
     private int mode = 0;
     private Vector3 rotateHorizontal = Vector3.back;
@@ -26,14 +30,27 @@ public class CubeMovement : NetworkBehaviour
     private GameObject ui;
     private UI uiScript;
 
+    private GameObject mainCamera;
+
     public static GameObject player;
 
     void Start()
     {
-        cam = Camera.main;
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15,Vector3.right));
+        Camera miniMapCamera = (Camera)Camera.Instantiate(miniMapPrefab, new Vector3(0, 120, 0), Quaternion.AngleAxis(90, Vector3.right));
+        cam = GameObject.Find("prfPlayerCamera(Clone)");
+        miniMap = GameObject.Find("prfMiniMap(Clone)");
+        mainCamera = GameObject.FindWithTag("MainCamera");
+        mainCamera.SetActive(false);
         rigidbody = GetComponent<Rigidbody>();
         ui = GameObject.Find("UI");
         uiScript = ui.GetComponent<UI>();
+
     }
 
     void Update()
@@ -51,6 +68,11 @@ public class CubeMovement : NetworkBehaviour
                 CmdFire(bullet,bulletOffset, bulletDirection, bulletScript.bulletSpeed);
                 lastShot = Time.time;
             }
+        }
+
+        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
+        {
+            Jump();
         }
 
         if (Input.GetKeyDown(KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Joystick1Button3))
@@ -77,12 +99,7 @@ public class CubeMovement : NetworkBehaviour
 
         rigidbody.AddForce(forwardForce * moveVertical * 0.002f);
         rigidbody.AddForce(rightForce * moveHorizontal * 0.002f);
-
-
-        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
-        {
-            Jump();
-        }
+        
     }
 
     public override void OnStartLocalPlayer()
@@ -245,6 +262,15 @@ public class CubeMovement : NetworkBehaviour
 
         }    
 
+    }
+
+    void OnDestroy()
+    {
+        if(mainCamera != null)
+            mainCamera.SetActive(true);
+
+        Destroy(cam);
+        Destroy(miniMap);
     }
 
 }
