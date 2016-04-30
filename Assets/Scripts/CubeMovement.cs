@@ -4,95 +4,120 @@ using UnityEngine.Networking;
 
 public class CubeMovement : NetworkBehaviour
 {
-    public float torque;
-    public float jumpSpeed;
-    public GameObject[] bulletPrefabs;
-    private int bullet = 0;
-    private float oldDamage = 0.0f;
-    public Vector3 bulletOffset;
-    public Vector3 bulletDirection = Vector3.forward;
+    public static GameObject player;
+
+    #region Cameras
     public Camera cameraPrefab;
     public Camera miniMapPrefab;
-    private float lastShot = 0.0f;
-        
-    private Rigidbody rigidbody;
-    private BulletStandardDestroy bulletScript;
-    private GameObject cam;
-    private GameObject miniMap;
+    private GameObject playerCameraObject;
+    private GameObject miniMapCameraObject;
+    private GameObject mainCamera;
+    #endregion
 
-    private bool isGrounded = false;
+    #region lookDirections
     private int mode = 0;
     private Vector3 rotateHorizontal = Vector3.back;
     private Vector3 rotateVertical = Vector3.right;
     private Vector3 forwardForce = Vector3.forward;
     private Vector3 rightForce = Vector3.right;
+    #endregion
 
-    public GameObject ui;
+    #region public
+    public float torque;
+    public float jumpSpeed;
+    public GameObject[] bulletPrefabs;
+    public GameObject specialPrefab;
+    #endregion
+
+    #region private
+    private int bullet = 0;
+    private Vector3 bulletOffset = Vector3.forward;
+    private Vector3 bulletDirection = Vector3.forward;
+    private float lastShot = 0.0f;
+    private Rigidbody rigidbody;
+    private BulletStandardDestroy bulletScript;
+    private bool isGrounded = false;
+    private GameObject ui;
     private UI uiScript;
+    #endregion
 
-    private GameObject mainCamera;
+    #region Network Synced
+    [SyncVar(hook = "OnScoreChanged")]
+    public int score;
+    [SyncVar]
+    public Color color;
+    [SyncVar]
+    public string playerName;
+    [SyncVar]
+    public int latency ;
 
-    public static GameObject player;
+    private NetworkClient nClient;
+
+    #endregion
+
+    void Awake()
+    {
+    }
 
     void Start()
     {
-        if (!isLocalPlayer)
-        {
-            return;
-        }
+        NetworkGameManager.sPlayers.Add(this);
+        GetComponent<MeshRenderer>().material.color = color;
+        
+        if (!isLocalPlayer)     return;
 
         Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15,Vector3.right));
         Camera miniMapCamera = (Camera)Camera.Instantiate(miniMapPrefab, new Vector3(0, 120, 0), Quaternion.AngleAxis(90, Vector3.right));
-        cam = GameObject.Find("prfPlayerCamera(Clone)");
-        miniMap = GameObject.Find("prfMiniMap(Clone)");
+        playerCameraObject = playerCamera.gameObject;
+        miniMapCameraObject = miniMapCamera.gameObject;
         mainCamera = GameObject.FindWithTag("MainCamera");
         mainCamera.SetActive(false);
         rigidbody = GetComponent<Rigidbody>();
-        ui = GameObject.FindGameObjectWithTag("UI");
-        //uiScript = ui.GetComponent<UI>();
-        
+        //nClient = GameObject.Find("LobbyManager").GetComponent<NetworkManager>().client;
+
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        player = gameObject;
 
     }
 
     void Update()
     {
-        if (!isLocalPlayer)
-        {
-            return;
-        }
+        getLatency();
 
-        if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKeyDown(KeyCode.Joystick1Button10))
+        if (!isLocalPlayer)     return;       
+
+        if (hasShootingInput())
         {
             bulletScript = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>();
             if (Time.time > bulletScript.rateOfFire + lastShot)
             {
                 CmdFire(bullet,bulletOffset, bulletDirection, bulletScript.bulletSpeed);
-                //RpcFire(bullet, bulletOffset, bulletDirection, bulletScript.bulletSpeed);
-
                 lastShot = Time.time;
             }
         }
 
-        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
+        if (hasSecondaryShootingInput())
         {
-            Jump();
+            CmdFireSecondary();
         }
 
-        if (Input.GetKeyDown(KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Joystick1Button3))
-        {
+        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
+            Jump();
+
+        if (Input.GetKeyDown(KeyCode.Backspace))
             toggleLethalBullets();
-        }
-        if(isSwitchingBullet())
+
+        if(hasSwitchingBulletInput())
             switchCurrentBullet();
+
     }
 
     void FixedUpdate()
     {
-
-        if (!isLocalPlayer)
-        {
-            return;
-        }
+        if (!isLocalPlayer)     return;
 
         float moveHorizontal = Input.GetAxis("Horizontal") * torque ;
         float moveVertical = Input.GetAxis("Vertical") * torque ;
@@ -101,15 +126,7 @@ public class CubeMovement : NetworkBehaviour
         rigidbody.AddTorque(rotateVertical * moveVertical);
 
         rigidbody.AddForce(forwardForce * moveVertical * 0.002f);
-        rigidbody.AddForce(rightForce * moveHorizontal * 0.002f);
-        
-    }
-
-    public override void OnStartLocalPlayer()
-    {
-        GetComponent<MeshRenderer>().material.color = Color.blue;
-        player = gameObject;
-
+        rigidbody.AddForce(rightForce * moveHorizontal * 0.002f);        
     }
 
     void OnCollisionStay() //check if you are colliding with the ground
@@ -120,7 +137,6 @@ public class CubeMovement : NetworkBehaviour
     [Command]
     void CmdFire(int current, Vector3 offset, Vector3 direction, float speed)
     {
-
         var bullet = (GameObject)Instantiate(
             bulletPrefabs[current],
             transform.position + (offset * bulletPrefabs[current].GetComponent<BulletStandardDestroy>().bulletOffsetMultiplier),
@@ -134,29 +150,19 @@ public class CubeMovement : NetworkBehaviour
 
         // Spawn the bullet on the Clients
         NetworkServer.Spawn(bullet);
-
-        Destroy(bullet, 5.0f);
     }
 
-    [ClientRpc]
-    void RpcFire(int current, Vector3 offset, Vector3 direction, float speed)
+    void CmdFireSecondary()
     {
-
-        var bullet = (GameObject)Instantiate(
-            bulletPrefabs[current],
-            transform.position + (offset * bulletPrefabs[current].GetComponent<BulletStandardDestroy>().bulletOffsetMultiplier),
+        var special = (GameObject)Instantiate(
+            specialPrefab,
+            transform.position,
             Quaternion.identity);
 
-        BulletStandardDestroy bulletScript = bullet.GetComponent<BulletStandardDestroy>();
+        BladeDancer bladeScript = special.GetComponent<BladeDancer>();
 
-        // Add velocity to the bullet
-        bullet.GetComponent<Rigidbody>().velocity = direction * speed;
-        bulletScript.owner = this;
+        bladeScript.owner = this.gameObject;
 
-        // Spawn the bullet on the Clients
-        NetworkServer.Spawn(bullet);
-
-        Destroy(bullet, 5.0f);
     }
 
     void Jump()
@@ -165,27 +171,9 @@ public class CubeMovement : NetworkBehaviour
         rigidbody.AddForce(Vector3.up * jumpSpeed);
     }
 
-    void Dash(float moveHorizontal, float moveVertical)
+    void Tackle()
     {
-        if(moveHorizontal < 0)
-        {
-            rigidbody.AddForce(Vector3.left * 100);
-        }
-        else if (moveHorizontal > 0)
-        {
-            rigidbody.AddForce(Vector3.right * 100);
-        }
-
-        if (moveVertical < 0)
-        {
-            rigidbody.AddForce(Vector3.back * 100);
-        }
-        else if (moveVertical > 0)
-        {
-            rigidbody.AddForce(Vector3.forward * 100);
-        }
-        rigidbody.AddForce(Vector3.up * 10);
-
+       
     }
 
     public void switchMode(int change)
@@ -278,10 +266,36 @@ public class CubeMovement : NetworkBehaviour
         uiScript.changeBulletIcon(bullet);
     }
 
-    bool isSwitchingBullet()
+    bool hasSwitchingBulletInput()
     {
+        //checks for Scroll Wheel Input and the Alphanumericals 1,2,3 above the Alpha Keys
         if (Input.GetKeyDown(KeyCode.Alpha1) || (Input.GetKeyDown(KeyCode.Alpha2)) || Input.GetKeyDown(KeyCode.Alpha3)
             || (Input.GetAxis("Mouse ScrollWheel") > 0) || (Input.GetAxis("Mouse ScrollWheel") < 0))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool hasShootingInput()
+    {
+        //chocks for Left MouseButton, the Contol Buttons and the Contoller 2nd Trigger Button
+        if(Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKeyDown(KeyCode.Joystick1Button10))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool hasSecondaryShootingInput()
+    {
+        if (Input.GetMouseButtonDown(1))
         {
             return true;
         }
@@ -310,13 +324,31 @@ public class CubeMovement : NetworkBehaviour
 
     }
 
+    void getLatency()
+    {
+            //latency = nClient.GetRTT();
+    }
+
     void OnDestroy()
     {
         if(mainCamera != null)
             mainCamera.SetActive(true);
 
-        Destroy(cam);
-        Destroy(miniMap);
+        Destroy(playerCameraObject);
+        Destroy(miniMapCameraObject);
+    }
+
+
+    void OnScoreChanged(int newValue)
+    {
+        int temp = newValue - score;
+
+        score = newValue;
+
+        var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
+        if (temp > 0.0f)
+            animation.startDamageAnimation(temp);
+
     }
 
 }

@@ -26,7 +26,7 @@ public class FloatingPoints : MonoBehaviour {
     public void startDamageAnimation(float damage)
     {
         damageAnim.SetTrigger("damage");
-        damagePoints.text = "- " + (int)damage;
+        damagePoints.text = "+ " + (int)damage;
     }
 
     public void startHealingAnimation(float amount)

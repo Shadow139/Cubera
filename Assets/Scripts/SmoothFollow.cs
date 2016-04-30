@@ -44,4 +44,18 @@ public class SmoothFollow : MonoBehaviour
         player.GetComponent<CubeMovement>().switchMode(-1);
     }
 
+    void rotateCameraRightSmooth()
+    {
+        transform.RotateAround(new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z), Vector3.up, 90);
+        cameraOffset = transform.position - player.transform.position;
+        player.GetComponent<CubeMovement>().switchMode(1);
+    }
+
+    void rotateCameraLeftSmooth()
+    {
+        transform.RotateAround(new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z), Vector3.up, -90);
+        cameraOffset = transform.position - player.transform.position;
+        player.GetComponent<CubeMovement>().switchMode(-1);
+    }
+
 }

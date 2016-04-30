@@ -15,6 +15,7 @@ public class BulletStandardDestroy : MonoBehaviour {
 
     void Start()
     {
+        Destroy(gameObject, 10.0f);
 
     }
 
@@ -28,11 +29,12 @@ public class BulletStandardDestroy : MonoBehaviour {
         {
             if (health.isLocalPlayer)
             {
-                var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
-                if (damage > 0.0f)
-                    animation.startDamageAnimation(damage);
+                //var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
+               // if (damage > 0.0f)
+                   // animation.startDamageAnimation(damage);
+
             }
-            
+            owner.score += (int)damage;
             health.TakeDamage(damage);
         }
         if(destroy)
