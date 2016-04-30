@@ -34,8 +34,8 @@ public class BulletStandardDestroy : MonoBehaviour {
                    // animation.startDamageAnimation(damage);
 
             }
-            owner.score += (int)damage;
-            health.TakeDamage(damage);
+            //owner.score += (int)damage;
+            health.TakeDamage(damage,owner);
         }
         if(destroy)
             Destroy(gameObject);

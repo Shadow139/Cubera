@@ -9,25 +9,38 @@ public class PlayerHealth : NetworkBehaviour
     public float maxArmor = 100;
     public bool destroyOnDeath;
 
+    private RectTransform[] healthBarRect;
+    public GameObject healthBarPrefab;
+    private GameObject healthBar;
+    public Vector3 healthBarOffset;
+
+
     private NetworkStartPosition[] spawnPoints;
 
-    [SyncVar]
+    [SyncVar(hook = "OnChangedHealth")]
     public float currentHealth = 100;
-    [SyncVar]
+    [SyncVar(hook = "OnChangedArmor")]
     public float currentArmor = 0;
     public bool hasArmor = false;
 
     void Start()
     {
-        if (isLocalPlayer)
-        {
-            spawnPoints = FindObjectsOfType<NetworkStartPosition>();
-        }
+        healthBar = (GameObject)Instantiate(healthBarPrefab, this.gameObject.transform.position + healthBarOffset, Quaternion.identity);
+        healthBarRect = healthBar.GetComponentsInChildren<RectTransform>();
     }
+
+    public override void OnStartLocalPlayer()
+    {
+        spawnPoints = FindObjectsOfType<NetworkStartPosition>();
+    }
+
 
     void Update()
     {
         HealthStatus();
+
+        if(healthBar != null)
+            healthBar.transform.position = gameObject.transform.position + healthBarOffset;
     }
 
     void HealthStatus()
@@ -42,7 +55,7 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
     
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, CubeMovement owner)
     {
         if (!isServer)
         {
@@ -50,7 +63,10 @@ public class PlayerHealth : NetworkBehaviour
         }
 
         if (hasArmor){            currentArmor -= amount;        }
-        else         {            currentHealth -= amount;       }
+        else         {
+            currentHealth -= amount;
+            owner.score += (int)amount;
+        }
 
         if (currentHealth <= 0)
         {
@@ -62,6 +78,8 @@ public class PlayerHealth : NetworkBehaviour
             {
                 currentHealth = maxHealth;
                 RpcRespawn();
+                owner.kills += 1;
+                owner.score += 50;
             }
         }
     }
@@ -110,4 +128,20 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
 
+    void OnChangedHealth(float newValue)
+    {
+        currentHealth = newValue;
+        healthBarRect[2].sizeDelta = new Vector2(newValue * 2, healthBarRect[2].sizeDelta.y);
+    }
+
+    void OnChangedArmor(float newValue)
+    {
+        currentArmor = newValue;
+        healthBarRect[3].sizeDelta = new Vector2(newValue * 2, healthBarRect[3].sizeDelta.y);
+    }
+
+    void OnDestroy()
+    {
+        Destroy(healthBar);
+    }
 }

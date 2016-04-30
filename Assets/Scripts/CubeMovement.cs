@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 using UnityEngine.Networking;
 
 public class CubeMovement : NetworkBehaviour
@@ -9,7 +10,7 @@ public class CubeMovement : NetworkBehaviour
     #region Cameras
     public Camera cameraPrefab;
     public Camera miniMapPrefab;
-    private GameObject playerCameraObject;
+    public GameObject playerCameraObject;
     private GameObject miniMapCameraObject;
     private GameObject mainCamera;
     #endregion
@@ -27,6 +28,8 @@ public class CubeMovement : NetworkBehaviour
     public float jumpSpeed;
     public GameObject[] bulletPrefabs;
     public GameObject specialPrefab;
+
+    public Text latencyText;
     #endregion
 
     #region private
@@ -44,16 +47,17 @@ public class CubeMovement : NetworkBehaviour
     #region Network Synced
     [SyncVar(hook = "OnScoreChanged")]
     public int score;
+    [SyncVar(hook = "OnKillsChanged")]
+    public int kills;
     [SyncVar]
     public Color color;
     [SyncVar]
     public string playerName;
-    [SyncVar]
-    public int latency ;
-
-    private NetworkClient nClient;
 
     #endregion
+
+    private NetworkClient nClient;
+    private int latency;
 
     void Awake()
     {
@@ -62,11 +66,14 @@ public class CubeMovement : NetworkBehaviour
     void Start()
     {
         NetworkGameManager.sPlayers.Add(this);
-        GetComponent<MeshRenderer>().material.color = color;
-        
-        if (!isLocalPlayer)     return;
+        GetComponent<MeshRenderer>().material.color = color;        
+    }
 
-        Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15,Vector3.right));
+    public override void OnStartLocalPlayer()
+    {
+        player = gameObject;
+
+        Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15, Vector3.right));
         Camera miniMapCamera = (Camera)Camera.Instantiate(miniMapPrefab, new Vector3(0, 120, 0), Quaternion.AngleAxis(90, Vector3.right));
         playerCameraObject = playerCamera.gameObject;
         miniMapCameraObject = miniMapCamera.gameObject;
@@ -74,20 +81,15 @@ public class CubeMovement : NetworkBehaviour
         mainCamera.SetActive(false);
         rigidbody = GetComponent<Rigidbody>();
         //nClient = GameObject.Find("LobbyManager").GetComponent<NetworkManager>().client;
-
-    }
-
-    public override void OnStartLocalPlayer()
-    {
-        player = gameObject;
-
+        //latencyText = GameObject.Find("Latency").GetComponent<Text>();
     }
 
     void Update()
     {
-        getLatency();
 
-        if (!isLocalPlayer)     return;       
+        if (!isLocalPlayer)     return;
+
+        //showLatency();
 
         if (hasShootingInput())
         {
@@ -152,6 +154,7 @@ public class CubeMovement : NetworkBehaviour
         NetworkServer.Spawn(bullet);
     }
 
+    [Command]
     void CmdFireSecondary()
     {
         var special = (GameObject)Instantiate(
@@ -162,6 +165,8 @@ public class CubeMovement : NetworkBehaviour
         BladeDancer bladeScript = special.GetComponent<BladeDancer>();
 
         bladeScript.owner = this.gameObject;
+
+        //NetworkServer.Spawn(special);
 
     }
 
@@ -319,16 +324,28 @@ public class CubeMovement : NetworkBehaviour
             {
                 prefab.GetComponent<BulletStandardDestroy>().damage = prefab.GetComponent<BulletStandardDestroy>().maxDamage;
             }
-
         }    
-
     }
 
-    void getLatency()
+    void showLatency()
     {
-            //latency = nClient.GetRTT();
-    }
+        latency = nClient.GetRTT();
+        if(latency < 100)
+        {
+            latencyText.color = Color.green;
+        }
+        else if(latency >= 100 && latency < 200)
+        {
+            latencyText.color = Color.yellow;
+        }
+        else
+        {
+            latencyText.color = Color.red;
+        }
 
+        latencyText.text = latency.ToString();
+    }
+    
     void OnDestroy()
     {
         if(mainCamera != null)
@@ -336,19 +353,17 @@ public class CubeMovement : NetworkBehaviour
 
         Destroy(playerCameraObject);
         Destroy(miniMapCameraObject);
+        NetworkGameManager.sPlayers.Remove(this);
     }
-
-
+    
     void OnScoreChanged(int newValue)
     {
-        int temp = newValue - score;
+        score = newValue;        
+    }
 
-        score = newValue;
-
-        var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
-        if (temp > 0.0f)
-            animation.startDamageAnimation(temp);
-
+    void OnKillsChanged(int newValue)
+    {
+        kills = newValue;
     }
 
 }
