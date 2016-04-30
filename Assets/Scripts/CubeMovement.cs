@@ -166,7 +166,7 @@ public class CubeMovement : NetworkBehaviour
 
         bladeScript.owner = this.gameObject;
 
-        //NetworkServer.Spawn(special);
+        NetworkServer.Spawn(special);
 
     }
 
