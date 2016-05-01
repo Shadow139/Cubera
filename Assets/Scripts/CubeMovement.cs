@@ -74,6 +74,7 @@ public class CubeMovement : NetworkBehaviour
         player = gameObject;
 
         Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15, Vector3.right));
+        //playerCamera.gameObject.GetComponent<MouseCamera>().cameraPivot = transform;
         Camera miniMapCamera = (Camera)Camera.Instantiate(miniMapPrefab, new Vector3(0, 120, 0), Quaternion.AngleAxis(90, Vector3.right));
         playerCameraObject = playerCamera.gameObject;
         miniMapCameraObject = miniMapCamera.gameObject;
@@ -137,7 +138,7 @@ public class CubeMovement : NetworkBehaviour
     }
 
     [Command]
-    void CmdFire(int current, Vector3 offset, Vector3 direction, float speed)
+    void CmdFire(int current, Vector3 offset, Vector3 direction, float speed, Vector4 col)
     {
         var bullet = (GameObject)Instantiate(
             bulletPrefabs[current],

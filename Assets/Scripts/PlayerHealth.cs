@@ -14,6 +14,7 @@ public class PlayerHealth : NetworkBehaviour
     private GameObject healthBar;
     public Vector3 healthBarOffset;
 
+    public GameObject deathHitEffectPrefab;
 
     private NetworkStartPosition[] spawnPoints;
 
@@ -23,10 +24,13 @@ public class PlayerHealth : NetworkBehaviour
     public float currentArmor = 0;
     public bool hasArmor = false;
 
+    private Color color;
+
     void Start()
     {
         healthBar = (GameObject)Instantiate(healthBarPrefab, this.gameObject.transform.position + healthBarOffset, Quaternion.identity);
         healthBarRect = healthBar.GetComponentsInChildren<RectTransform>();
+        color = gameObject.GetComponent<CubeMovement>().color;
     }
 
     public override void OnStartLocalPlayer()
@@ -77,7 +81,8 @@ public class PlayerHealth : NetworkBehaviour
             else
             {
                 currentHealth = maxHealth;
-                RpcRespawn();
+                RpcRespawn(color);
+                Debug.Log(color);
                 owner.kills += 1;
                 owner.score += 50;
             }
@@ -113,8 +118,13 @@ public class PlayerHealth : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcRespawn()
+    void RpcRespawn(Vector4 col)
     {
+        ParticleSystemRenderer p = deathHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
+        p.sharedMaterial.color = col;
+
+        Instantiate(deathHitEffectPrefab, transform.position, Quaternion.identity);
+        
         if (isLocalPlayer)
         {
             Vector3 spawnPoint = Vector3.zero;
@@ -123,7 +133,7 @@ public class PlayerHealth : NetworkBehaviour
             {
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
-
+            
             transform.position = spawnPoint;
         }
     }

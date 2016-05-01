@@ -8,8 +8,10 @@ public class BulletStandardDestroy : MonoBehaviour {
     public float bulletSpeed;
     public float rateOfFire;
     public float bulletOffsetMultiplier;
-
     public bool destroy = true;
+
+    public GameObject playerHitEffectPrefab;
+    public GameObject enemyHitEffectPrefab;
 
     public CubeMovement owner;
 
@@ -25,6 +27,7 @@ public class BulletStandardDestroy : MonoBehaviour {
         var hit = collision.gameObject;
         var health = hit.GetComponent<PlayerHealth>();
 
+
         if (health != null)
         {
             if (health.isLocalPlayer)
@@ -35,9 +38,15 @@ public class BulletStandardDestroy : MonoBehaviour {
 
             }
             //owner.score += (int)damage;
+            Instantiate(enemyHitEffectPrefab, transform.position, Quaternion.identity);
             health.TakeDamage(damage,owner);
         }
-        if(destroy)
+        else
+        {
+            Instantiate(playerHitEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (destroy)
             Destroy(gameObject);
     }
 }
