@@ -38,6 +38,10 @@ public class BulletStandardDestroy : MonoBehaviour {
 
             }
             //owner.score += (int)damage;
+
+            ParticleSystemRenderer p = enemyHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
+            p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;
+
             Instantiate(enemyHitEffectPrefab, transform.position, Quaternion.identity);
             health.TakeDamage(damage,owner);
         }

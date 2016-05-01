@@ -83,6 +83,11 @@ public class CubeMovement : NetworkBehaviour
         rigidbody = GetComponent<Rigidbody>();
         //nClient = GameObject.Find("LobbyManager").GetComponent<NetworkManager>().client;
         //latencyText = GameObject.Find("Latency").GetComponent<Text>();
+
+        /*foreach(GameObject b in bulletPrefabs)
+        {
+            b.GetComponent<MeshRenderer>().sharedMaterial.color = color; 
+        }*/
     }
 
     void Update()
@@ -138,7 +143,7 @@ public class CubeMovement : NetworkBehaviour
     }
 
     [Command]
-    void CmdFire(int current, Vector3 offset, Vector3 direction, float speed, Vector4 col)
+    void CmdFire(int current, Vector3 offset, Vector3 direction, float speed)
     {
         var bullet = (GameObject)Instantiate(
             bulletPrefabs[current],
