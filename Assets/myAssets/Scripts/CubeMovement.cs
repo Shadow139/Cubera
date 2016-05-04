@@ -76,7 +76,7 @@ public class CubeMovement : NetworkBehaviour
         player = gameObject;
 
         Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15, Vector3.right));
-        //playerCamera.gameObject.GetComponent<MouseCamera>().cameraPivot = transform;
+        playerCamera.gameObject.GetComponent<MouseCamera>().cameraPivot = transform;
         Camera miniMapCamera = (Camera)Camera.Instantiate(miniMapPrefab, new Vector3(0, 120, 0), Quaternion.AngleAxis(90, Vector3.right));
         playerCameraObject = playerCamera.gameObject;
         miniMapCameraObject = miniMapCamera.gameObject;
@@ -95,7 +95,7 @@ public class CubeMovement : NetworkBehaviour
     {
 
         if (!isLocalPlayer)     return;
-
+        
         if (hasShootingInput())
         {
             bulletScript = bulletPrefabs[bullet].GetComponent<BulletStandardDestroy>();
@@ -136,6 +136,8 @@ public class CubeMovement : NetworkBehaviour
 
         float moveHorizontal = Input.GetAxis("Horizontal") * torque ;
         float moveVertical = Input.GetAxis("Vertical") * torque ;
+
+        getLookDirection();
 
         rb.AddTorque(rotateHorizontal * moveHorizontal);
         rb.AddTorque(rotateVertical * moveVertical);
@@ -420,6 +422,34 @@ public class CubeMovement : NetworkBehaviour
 
         return false;
     }
+
+    void getLookDirection()
+    {
+        forwardForce.x = playerCameraObject.transform.forward.x;
+        forwardForce.y = 0.0f;
+        forwardForce.z = playerCameraObject.transform.forward.z;
+
+        rightForce.x = playerCameraObject.transform.right.x;
+        rightForce.y = 0.0f;
+        rightForce.z = playerCameraObject.transform.right.z;
+
+        rotateHorizontal.x = -playerCameraObject.transform.forward.x;
+        rotateHorizontal.y = 0.0f;
+        rotateHorizontal.z = -playerCameraObject.transform.forward.z;
+
+        rotateVertical.x = playerCameraObject.transform.right.x;
+        rotateVertical.y = 0.0f;
+        rotateVertical.z = playerCameraObject.transform.right.z;
+
+        bulletOffset.x = playerCameraObject.transform.forward.x;
+        bulletOffset.y = 0.0f;
+        bulletOffset.z = playerCameraObject.transform.forward.z;
+
+        bulletDirection.x = playerCameraObject.transform.forward.x;
+        bulletDirection.y = 0.0f;
+        bulletDirection.z = playerCameraObject.transform.forward.z;
+    }
+
     public int getLatency()
     {
         if(nClient == null)

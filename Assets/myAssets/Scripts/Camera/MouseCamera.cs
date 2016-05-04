@@ -106,8 +106,7 @@ public class MouseCamera : MonoBehaviour {
 
         bool constrainMouseY = camBottom && transform.position.y - cameraPivot.transform.position.y <= 0;
 
-        if (Input.GetMouseButton(0) || Input.GetMouseButton(1))
-        {
+
             Cursor.visible = false; // if you want the cursor behavior of the version 1.0, change this line to "Screen.lockCursor = true;"
 
             mouseX += Input.GetAxis("Mouse X") * mouseSpeed;
@@ -119,11 +118,10 @@ public class MouseCamera : MonoBehaviour {
             }
             else
                 mouseY -= Input.GetAxis("Mouse Y") * mouseSpeed;
-        }
-        else
-            Cursor.visible = true; // if you want the cursor behavior of the version 1.0, change this line to "Screen.lockCursor = false;"
 
-        mouseY = ClampAngle(mouseY, -89.5f, 89.5f);
+            //Cursor.visible = true; // if you want the cursor behavior of the version 1.0, change this line to "Screen.lockCursor = false;"
+
+        mouseY = ClampAngle(mouseY, -30f, 30f);
         mouseXSmooth = Mathf.SmoothDamp(mouseXSmooth, mouseX, ref mouseXVel, mouseSmoothingFactor);
         mouseYSmooth = Mathf.SmoothDamp(mouseYSmooth, mouseY, ref mouseYVel, mouseSmoothingFactor);
 
@@ -135,9 +133,8 @@ public class MouseCamera : MonoBehaviour {
         mouseYSmooth = ClampAngle(mouseYSmooth, mouseYMin, mouseYMax);
 
 
-        if (Input.GetMouseButton(1))
-
-        desiredDistance = desiredDistance - Input.GetAxis("Mouse ScrollWheel") * mouseScroll;
+        //if (Input.GetMouseButton(1))
+        //    desiredDistance = desiredDistance - Input.GetAxis("Mouse ScrollWheel") * mouseScroll;
 
         if (desiredDistance > distanceMax)
             desiredDistance = distanceMax;
