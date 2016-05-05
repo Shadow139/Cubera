@@ -82,7 +82,7 @@ public class PlayerHealth : NetworkBehaviour
             {
                 currentHealth = maxHealth;
                 RpcRespawn(color);
-                Debug.Log(color);
+
                 owner.kills += 1;
                 owner.score += 50;
             }
@@ -122,20 +122,29 @@ public class PlayerHealth : NetworkBehaviour
     {
         ParticleSystemRenderer p = deathHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
         p.sharedMaterial.color = col;
-
-        Instantiate(deathHitEffectPrefab, transform.position, Quaternion.identity);
         
+        Instantiate(deathHitEffectPrefab, transform.position, Quaternion.identity);
+
+        Vector3 spawnPoint = Vector3.zero;
+
         if (isLocalPlayer)
         {
-            Vector3 spawnPoint = Vector3.zero;
 
             if (spawnPoints != null && spawnPoints.Length > 0)
             {
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
-            
-            transform.position = spawnPoint;
         }
+        StartCoroutine(respawn(spawnPoint));
+    }
+
+    private IEnumerator respawn(Vector3 spawn)
+    {
+        Renderer rend = this.gameObject.GetComponent<Renderer>();
+        rend.enabled = false;
+        yield return new WaitForSeconds(3.0f);
+        transform.position = spawn;
+        rend.enabled = true;
     }
 
     void OnChangedHealth(float newValue)

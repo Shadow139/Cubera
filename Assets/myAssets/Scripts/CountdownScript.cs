@@ -1,11 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 using System.Collections;
+using UnityStandardAssets.Network;
 
-public class CountdownScript : MonoBehaviour {
+public class CountdownScript : NetworkBehaviour
+{
 
+    public bool displaySecondsOnly;
     public float timeLeft = 300.0f;
     public bool stop = true;
+
+    public bool isRollCooldown;
+    public bool isGameCountdown;
 
     private int minutes;
     private int seconds;
@@ -16,7 +23,16 @@ public class CountdownScript : MonoBehaviour {
 
     void Start () {
         textField = GetComponent<Text>();
-        startCountdown(timeLeft);
+        textField.text = "";
+
+        if (displaySecondsOnly)
+        {
+            startCountdownSeconds(timeLeft);
+        }
+        else
+        {
+            startCountdown(timeLeft);
+        }
     }
 
     void Update()
@@ -27,11 +43,29 @@ public class CountdownScript : MonoBehaviour {
         minutes = (int)(timeLeft / 60);
         seconds = (int)timeLeft % 60;
         if (seconds > 59) seconds = 59;
-        if (minutes < 0)
+        if (minutes < 0 || seconds < 0)
         {
             stop = true;
             minutes = 0;
             seconds = 0;
+
+            textField.text = "";
+
+            if (isRollCooldown)
+            {
+                textField.text = "";
+                CubeMovement.player.GetComponent<CubeMovement>().setIsAbleToRoll(true);
+            }
+            if (isGameCountdown)
+            {
+                GameObject.FindGameObjectWithTag("TopPanel").GetComponent<LobbyTopPanel>().ToggleVisibility(true);
+                GameObject.FindGameObjectWithTag("UI").GetComponent<PlayerScore>().setTabListener(false);
+                GameObject.FindGameObjectWithTag("UI").GetComponent<PlayerScore>().setActive(true);
+                GameObject.FindGameObjectWithTag("PlayerCamera").GetComponent<MouseCamera>().hideCursor = false;
+
+                NetworkGameManager.gameover = true;
+            }
+
         }
         //        fraction = (timeLeft * 100) % 100;
     }
@@ -44,6 +78,14 @@ public class CountdownScript : MonoBehaviour {
         StartCoroutine(updateCoroutine());
     }
 
+    public void startCountdownSeconds(float from)
+    {
+        stop = false;
+        timeLeft = from;
+        Update();
+        StartCoroutine(updateCoroutineSeconds());
+    }
+
 
     private IEnumerator updateCoroutine()
     {
@@ -53,4 +95,14 @@ public class CountdownScript : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
     }
+
+    private IEnumerator updateCoroutineSeconds()
+    {
+        while (!stop)
+        {
+            textField.text = seconds + "";
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+
 }

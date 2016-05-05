@@ -3,14 +3,14 @@ using System.Collections;
 
 public class BladeDancer : MonoBehaviour {
 
-    public GameObject owner;
+    public CubeMovement owner;
     public Transform target;
     public float orbitDistance = 10.0f;
     public float orbitDegreesPerSec = 180.0f;
 
     void Start () {
         Destroy(gameObject, 10.0f);
-        target = owner.transform;
+        target = owner.gameObject.transform;
     }
 
     void Update () {

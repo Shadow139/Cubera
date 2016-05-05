@@ -4,20 +4,33 @@ using System.Collections;
 public class PlayerScore : MonoBehaviour {
 
     public GameObject playerScoreBoard;
+    public bool isActiva = true;
 
     void Start () {
                 
     }
 	
 	void Update () {
+        if (isActiva)
+        {
+            if (Input.GetKey(KeyCode.Tab))
+            {
+                setActive(true);
+            }
+            else
+            {
+                setActive(false);
+            }
+        }
+    }
 
-        if (Input.GetKey(KeyCode.Tab))
-        {
-            playerScoreBoard.active = true;
-        }
-        else
-        {
-            playerScoreBoard.active = false;
-        }
+    public void setActive(bool value)
+    {
+        playerScoreBoard.active = value;
+    }
+
+    public void setTabListener(bool value)
+    {
+        isActiva = value;
     }
 }

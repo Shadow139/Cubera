@@ -2,10 +2,10 @@
 using System.Collections;
 
 public class MouseCamera : MonoBehaviour {
-
-
+    
     public Transform cameraPivot;
     public Camera camera;
+    public bool hideCursor = true;
     public float distance = 5f;
     public float distanceMax = 30f;
     public float mouseSpeed = 8f;
@@ -35,8 +35,7 @@ public class MouseCamera : MonoBehaviour {
     private static float planeAspect;
     private static float halfPlaneHeight;
     private static float halfPlaneWidth;
-
-
+    
     void Start()
     {
         camera = gameObject.GetComponent<Camera>();
@@ -52,8 +51,7 @@ public class MouseCamera : MonoBehaviour {
         mouseX = 0f;
         mouseY = 15f;
     }
-
-
+    
     public static void CameraSetup()
     {
         GameObject cameraUsed;
@@ -76,8 +74,7 @@ public class MouseCamera : MonoBehaviour {
         cameraPivot = GameObject.Find("cameraPivot") as GameObject;
         cameraScript.cameraPivot = cameraPivot.transform;
     }
-
-
+    
     void LateUpdate()
     {
         if (cameraPivot == null)
@@ -90,11 +87,9 @@ public class MouseCamera : MonoBehaviour {
 
         GetDesiredPosition();
 
-        PositionUpdate();
-        
+        PositionUpdate();        
     }
-
-
+    
     void GetInput()
     {
 
@@ -106,10 +101,25 @@ public class MouseCamera : MonoBehaviour {
 
         bool constrainMouseY = camBottom && transform.position.y - cameraPivot.transform.position.y <= 0;
 
+        if (!NetworkGameManager.gameover)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+                hideCursor = !hideCursor;
+        }
 
+        if (hideCursor)
+        {
             Cursor.visible = false; // if you want the cursor behavior of the version 1.0, change this line to "Screen.lockCursor = true;"
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else
+        {
+            Cursor.visible = true; // if you want the cursor behavior of the version 1.0, change this line to "Screen.lockCursor = true;"
+            Cursor.lockState = CursorLockMode.None;
+            return;
+        }
 
-            mouseX += Input.GetAxis("Mouse X") * mouseSpeed;
+       mouseX += Input.GetAxis("Mouse X") * mouseSpeed;
 
             if (constrainMouseY)
             {
@@ -142,8 +152,7 @@ public class MouseCamera : MonoBehaviour {
         if (desiredDistance < 0.05)
             desiredDistance = 0.05f;
     }
-
-
+    
     void GetDesiredPosition()
     {
         distance = desiredDistance;
@@ -175,8 +184,7 @@ public class MouseCamera : MonoBehaviour {
 
         desiredPosition = GetCameraPosition(mouseYSmooth, mouseXSmooth, distance); // if the camera view was blocked, then this is the new "forced" position
     }
-
-
+    
     void PositionUpdate()
     {
         transform.position = desiredPosition;
@@ -184,16 +192,14 @@ public class MouseCamera : MonoBehaviour {
         if (distance > 0.05)
             transform.LookAt(cameraPivot);
     }
-
-
+    
     Vector3 GetCameraPosition(float xAxis, float yAxis, float distance)
     {
         Vector3 offset = new Vector3(0, 0, -distance);
         Quaternion rotation = Quaternion.Euler(xAxis, yAxis, 0);
         return cameraPivot.position + rotation * offset;
     }
-
-
+    
     float CheckCameraClipPlane(Vector3 from, Vector3 to)
     {
         var closestDistance = -1f;
@@ -202,6 +208,7 @@ public class MouseCamera : MonoBehaviour {
 
         ClipPlaneVertexes clipPlane = GetClipPlaneAt(to);
 
+        /*
         Debug.DrawLine(clipPlane.UpperLeft, clipPlane.UpperRight);
         Debug.DrawLine(clipPlane.UpperRight, clipPlane.LowerRight);
         Debug.DrawLine(clipPlane.LowerRight, clipPlane.LowerLeft);
@@ -212,32 +219,30 @@ public class MouseCamera : MonoBehaviour {
         Debug.DrawLine(from + transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, clipPlane.UpperRight, Color.cyan);
         Debug.DrawLine(from - transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, clipPlane.LowerLeft, Color.cyan);
         Debug.DrawLine(from + transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, clipPlane.LowerRight, Color.cyan);
+        */
 
-
-        if (Physics.Linecast(from, to, out hitInfo) && hitInfo.collider.tag != "Player")
+        if (Physics.Linecast(from, to, out hitInfo) && hitInfo.collider.tag != "Player" && hitInfo.collider.tag != "Special")
             closestDistance = hitInfo.distance - camera.nearClipPlane;
 
-        if (Physics.Linecast(from - transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, clipPlane.UpperLeft, out hitInfo) && hitInfo.collider.tag != "Player")
+        if (Physics.Linecast(from - transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, clipPlane.UpperLeft, out hitInfo) && hitInfo.collider.tag != "Player" && hitInfo.collider.tag != "Special")
             if (hitInfo.distance < closestDistance || closestDistance == -1)
                 closestDistance = Vector3.Distance(hitInfo.point + transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, from);
 
-        if (Physics.Linecast(from + transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, clipPlane.UpperRight, out hitInfo) && hitInfo.collider.tag != "Player")
+        if (Physics.Linecast(from + transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, clipPlane.UpperRight, out hitInfo) && hitInfo.collider.tag != "Player" && hitInfo.collider.tag != "Special")
             if (hitInfo.distance < closestDistance || closestDistance == -1)
                 closestDistance = Vector3.Distance(hitInfo.point - transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, from);
 
-        if (Physics.Linecast(from - transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, clipPlane.LowerLeft, out hitInfo) && hitInfo.collider.tag != "Player")
+        if (Physics.Linecast(from - transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, clipPlane.LowerLeft, out hitInfo) && hitInfo.collider.tag != "Player" && hitInfo.collider.tag != "Special")
             if (hitInfo.distance < closestDistance || closestDistance == -1)
                 closestDistance = Vector3.Distance(hitInfo.point + transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, from);
 
-        if (Physics.Linecast(from + transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, clipPlane.LowerRight, out hitInfo) && hitInfo.collider.tag != "Player")
+        if (Physics.Linecast(from + transform.right * halfPlaneWidth - transform.up * halfPlaneHeight, clipPlane.LowerRight, out hitInfo) && hitInfo.collider.tag != "Player" && hitInfo.collider.tag != "Special")
             if (hitInfo.distance < closestDistance || closestDistance == -1)
                 closestDistance = Vector3.Distance(hitInfo.point - transform.right * halfPlaneWidth + transform.up * halfPlaneHeight, from);
-
-
+        
         return closestDistance;
     }
-
-
+    
     float ClampAngle(float angle, float min, float max)
     {
         while (angle < -360 || angle > 360)
@@ -250,8 +255,7 @@ public class MouseCamera : MonoBehaviour {
 
         return Mathf.Clamp(angle, min, max);
     }
-
-
+    
     public struct ClipPlaneVertexes
     {
         public Vector3 UpperLeft;
@@ -259,8 +263,7 @@ public class MouseCamera : MonoBehaviour {
         public Vector3 LowerLeft;
         public Vector3 LowerRight;
     }
-
-
+    
     public ClipPlaneVertexes GetClipPlaneAt(Vector3 pos)
     {
         var clipPlane = new ClipPlaneVertexes();
@@ -292,5 +295,4 @@ public class MouseCamera : MonoBehaviour {
 
         return clipPlane;
     }
-
 }

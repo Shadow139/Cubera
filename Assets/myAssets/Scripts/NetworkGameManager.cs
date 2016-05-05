@@ -14,14 +14,15 @@ public class NetworkGameManager : NetworkBehaviour
     public Text[] playerScores;
     public Text[] playerLatencys;
 
+    public static bool gameover = false;
+
     private float lastListUpdate = 0.0f;
 
 
     void Start () {
-
-	}
+        gameover = false;
+    }
 	
-	// Update is called once per frame
 	void Update () {
         
     }

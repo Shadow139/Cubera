@@ -3,15 +3,19 @@ using System.Collections;
 
 public class Billboard : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
+    GameObject playerCam;
+
+    // Use this for initialization
+    void Start () {
 	
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        GameObject t = GameObject.FindWithTag("PlayerCamera");
-        if (t != null)
-            transform.LookAt(t.transform);
+        if(playerCam == null)
+            playerCam = GameObject.FindWithTag("PlayerCamera");
+
+        if (playerCam != null)
+            transform.LookAt(playerCam.transform);
 	}
 }

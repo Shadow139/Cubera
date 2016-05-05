@@ -30,7 +30,6 @@ public class CubeMovement : NetworkBehaviour
     public GameObject[] specialPrefab;
 
     public int rollValue = 0;
-    public Text latencyText;
     #endregion
 
     #region private
@@ -42,8 +41,12 @@ public class CubeMovement : NetworkBehaviour
     private BulletStandardDestroy bulletScript;
     private bool isGrounded = false;
     private bool isAbleToTackle = true;
+    private bool isAbleToRoll = false;
+    private bool hasSpecialSkill = false;
     private GameObject ui;
     private UI uiScript;
+    private NetworkClient nClient;
+    private int latency;
     #endregion
 
     #region Network Synced
@@ -52,15 +55,12 @@ public class CubeMovement : NetworkBehaviour
     [SyncVar(hook = "OnKillsChanged")]
     public int kills;
     [SyncVar]
-    public Color color;
+    public Color color = Color.white;
     [SyncVar]
     public string playerName;
 
     #endregion
-
-    private NetworkClient nClient;
-    private int latency;
-
+    
     void Awake()
     {
     }
@@ -95,6 +95,7 @@ public class CubeMovement : NetworkBehaviour
     {
 
         if (!isLocalPlayer)     return;
+        if (NetworkGameManager.gameover) return;
         
         if (hasShootingInput())
         {
@@ -106,9 +107,9 @@ public class CubeMovement : NetworkBehaviour
             }
         }
 
-        if (hasSecondaryShootingInput())
+        if (hasSecondaryShootingInput() && hasSpecialSkill)
         {
-            CmdFireSecondary(rollValue);
+            checkSpecialSkill();
         }
 
         if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
@@ -124,7 +125,7 @@ public class CubeMovement : NetworkBehaviour
         if (hasSwitchingBulletInput())
             switchCurrentBullet();
 
-        if (hasStopped())
+        if (hasStopped() && isAbleToRoll)
         {
             rollNewSpecial();
         }
@@ -133,6 +134,7 @@ public class CubeMovement : NetworkBehaviour
     void FixedUpdate()
     {
         if (!isLocalPlayer)     return;
+        if (NetworkGameManager.gameover) return;
 
         float moveHorizontal = Input.GetAxis("Horizontal") * torque ;
         float moveVertical = Input.GetAxis("Vertical") * torque ;
@@ -168,40 +170,80 @@ public class CubeMovement : NetworkBehaviour
     }
 
     [Command]
-    void CmdFireSecondary(int current)
+    void CmdBladedancer(int current)
     {
         var special = (GameObject)Instantiate(
             specialPrefab[current],
             transform.position,
             Quaternion.identity);
-        
-        switch (current)
+
+        BladeDancer script = special.GetComponent<BladeDancer>();
+        script.owner = this;
+
+        NetworkServer.Spawn(special);
+    }
+
+    [Command]
+    void CmdBubbleshield(int current)
+    {
+        var special = (GameObject)Instantiate(
+            specialPrefab[current],
+            transform.position,
+            Quaternion.identity);
+
+        BubbleShield script = special.GetComponent<BubbleShield>();
+        script.owner = this;
+
+        NetworkServer.Spawn(special);
+    }
+
+    [Command]
+    void CmdTurretship(int current)
+    {
+        var special = (GameObject)Instantiate(
+            specialPrefab[current],
+            transform.position,
+            Quaternion.identity);
+
+        TurretShip script = special.GetComponent<TurretShip>();
+        script.owner = this;
+
+        NetworkServer.Spawn(special);
+    }
+
+    void checkSpecialSkill()
+    {
+        switch (rollValue)
         {
+            case 0:
+                Debug.Log("Error: 0 was used as special Skill!");
+                break;
+            case 1:
+
+                break;
             case 2:
-                Shield script0 = special.GetComponent<Shield>();
-                script0.owner = this.gameObject;
                 break;
             case 3:
-                BladeDancer script = special.GetComponent<BladeDancer>();
-                script.owner = this.gameObject;
+                CmdTurretship(rollValue);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
                 break;
             case 4:
-                BladeDancer script1 = special.GetComponent<BladeDancer>();
-                script1.owner = this.gameObject;
+                CmdBladedancer(rollValue);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
                 break;
             case 5:
-                Shield script2 = special.GetComponent<Shield>();
-                script2.owner = this.gameObject;
                 break;
             case 6:
-                Shield script3 = special.GetComponent<Shield>();
-                script3.owner = this.gameObject;
+                CmdBubbleshield(rollValue);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
                 break;
             default:
                 break;
         }
-        
-        NetworkServer.Spawn(special);
+
+        hasSpecialSkill = false;
+        rollValue = 0;
+        uiScript.changeSpecialIcon(rollValue);
     }
 
     void Jump()
@@ -323,7 +365,9 @@ public class CubeMovement : NetworkBehaviour
             ui = GameObject.FindGameObjectWithTag("UI");
             uiScript = ui.GetComponent<UI>();
         }
-
+        hasSpecialSkill = true;
+        isAbleToRoll = false;
+        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(10.0f);
         uiScript.changeSpecialIcon(rollValue);
     }
 
@@ -385,27 +429,27 @@ public class CubeMovement : NetworkBehaviour
 
     int roll()
     {
-        if (transform.up == Vector3.up)
+        if (transform.up.y > 0.89f)
         {
             return 1;
         }
-        else if ((-transform.up) == Vector3.up)
+        else if ((-transform.up).y > 0.89f)
         {
             return 6;
         }
-        else if (transform.forward == Vector3.up)
+        else if (transform.forward.y > 0.89f)
         {
             return 3;
         }
-        else if ((-transform.forward) == Vector3.up)
+        else if ((-transform.forward).y > 0.89f)
         {
             return 5;
         }
-        else if (transform.right == Vector3.up)
+        else if (transform.right.y > 0.89f)
         {
             return 4;
         }
-        else if ((-transform.right) == Vector3.up)
+        else if ((-transform.right).y > 0.89f)
         {
             return 2;
         }
@@ -450,6 +494,11 @@ public class CubeMovement : NetworkBehaviour
         bulletDirection.z = playerCameraObject.transform.forward.z;
     }
 
+    public void setIsAbleToRoll(bool value)
+    {
+        isAbleToRoll = value;
+    }
+
     public int getLatency()
     {
         if(nClient == null)
@@ -480,6 +529,16 @@ public class CubeMovement : NetworkBehaviour
     void OnKillsChanged(int newValue)
     {
         kills = newValue;
+    }
+
+    public Vector3 getForward()
+    {
+        return forwardForce;
+    }
+
+    public Vector3 getRight()
+    {
+        return rightForce;
     }
 
 }

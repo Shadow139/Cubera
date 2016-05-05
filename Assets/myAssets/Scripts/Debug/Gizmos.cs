@@ -67,10 +67,6 @@ public class Gizmos : MonoBehaviour
             roll.text = "";
             latency.text = "";
         }
-        temp = CubeMovement.player.transform.position + CubeMovement.player.GetComponent<CubeMovement>().playerCameraObject.transform.forward;
-
-        Debug.DrawLine(CubeMovement.player.transform.position,new Vector3(temp.x,0.0f,temp.z) , Color.red);
-
     }
 
     string showLatency()
