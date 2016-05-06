@@ -123,12 +123,27 @@ public class PlayerHealth : NetworkBehaviour
         ParticleSystemRenderer p = deathHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
         p.sharedMaterial.color = col;
         
-        Instantiate(deathHitEffectPrefab, transform.position, Quaternion.identity);
-
+        GameObject particle = (GameObject)Instantiate(deathHitEffectPrefab, transform.position, Quaternion.identity);
+        healthBar.SetActive(false);
+        
         Vector3 spawnPoint = Vector3.zero;
 
         if (isLocalPlayer)
         {
+            /*
+            GameObject panel = GameObject.Find("RespawnPanel");
+            Text[] textObjects = panel.GetComponentsInChildren<Text>();
+
+            foreach (Text t in textObjects)
+            {
+                t.enabled = true;
+
+                CountdownScript scr = t.GetComponent<CountdownScript>();
+                if (scr != null)
+                    scr.startCountdownSeconds(5.0f);
+            }*/
+
+            GameObject.FindGameObjectWithTag("PlayerCamera").GetComponent<MouseCamera>().setCameraPivot(particle.transform);
 
             if (spawnPoints != null && spawnPoints.Length > 0)
             {
@@ -141,9 +156,14 @@ public class PlayerHealth : NetworkBehaviour
     private IEnumerator respawn(Vector3 spawn)
     {
         Renderer rend = this.gameObject.GetComponent<Renderer>();
-        rend.enabled = false;
-        yield return new WaitForSeconds(3.0f);
         transform.position = spawn;
+        rend.enabled = false;
+        yield return new WaitForSeconds(5.0f);
+        healthBar.SetActive(true);
+
+        if (isLocalPlayer)
+            GameObject.FindGameObjectWithTag("PlayerCamera").GetComponent<MouseCamera>().setCameraPivot(transform);
+
         rend.enabled = true;
     }
 

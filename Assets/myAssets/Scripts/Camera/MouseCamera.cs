@@ -295,4 +295,9 @@ public class MouseCamera : MonoBehaviour {
 
         return clipPlane;
     }
+
+    public void setCameraPivot(Transform newPivot)
+    {
+        cameraPivot = newPivot;
+    }
 }

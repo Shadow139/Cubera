@@ -30,14 +30,6 @@ public class BulletStandardDestroy : MonoBehaviour {
 
         if (health != null)
         {
-            if (health.isLocalPlayer)
-            {
-                //var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
-               // if (damage > 0.0f)
-                   // animation.startDamageAnimation(damage);
-
-            }
-            //owner.score += (int)damage;
 
             ParticleSystemRenderer p = enemyHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
             p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;

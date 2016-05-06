@@ -7,10 +7,12 @@ public class FloatingPoints : MonoBehaviour {
     public Text damagePoints;
     public Text healingPoints;
     public Text armorPoints;
+    public Image killImage;
 
     private Animator damageAnim;
     private Animator healingAnim;
     private Animator armorAnim;
+    private Animator killAnim;
         
     void Start () {
         damageAnim = damagePoints.GetComponent<Animator>();
@@ -21,6 +23,9 @@ public class FloatingPoints : MonoBehaviour {
 
         armorAnim = armorPoints.GetComponent<Animator>();
         armorPoints = armorPoints.GetComponent<Text>();
+
+        killAnim = killImage.GetComponent<Animator>();
+
     }
 
     public void startDamageAnimation(float damage)
@@ -39,5 +44,10 @@ public class FloatingPoints : MonoBehaviour {
     {
         armorAnim.SetTrigger("damage");
         armorPoints.text = "+ " + (int)amount + "\n Armor";
+    }
+
+    public void startKillAnimation()
+    {
+        killAnim.SetTrigger("kill");
     }
 }

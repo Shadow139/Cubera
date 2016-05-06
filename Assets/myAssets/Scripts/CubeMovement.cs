@@ -523,11 +523,24 @@ public class CubeMovement : NetworkBehaviour
     
     void OnScoreChanged(int newValue)
     {
+        if (isLocalPlayer)
+        {
+            int val = newValue - score;
+            var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
+            if (newValue > 0.0f)
+                animation.startDamageAnimation(val);
+        }
+
         score = newValue;        
     }
 
     void OnKillsChanged(int newValue)
     {
+        if (isLocalPlayer)
+        {
+            var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
+            animation.startKillAnimation();
+        }
         kills = newValue;
     }
 

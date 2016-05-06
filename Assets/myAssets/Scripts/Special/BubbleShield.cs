@@ -10,24 +10,32 @@ public class BubbleShield : NetworkBehaviour
 
     void Start () {
         Destroy(gameObject, 10.0f);
+
+        if (!isServer) return;
+
         target = owner.gameObject.transform;
     }
 
     void LateUpdate()
     {
+        if (!isServer) return;
+
         transform.position = target.position;
     }
 
     void OnTriggerEnter(Collider other)
     {
+        var hit = other.gameObject;
+
         if (other.gameObject.CompareTag("Bullet"))
         {
-            var hit = other.gameObject;
             var rb = hit.GetComponent<Rigidbody>();
+
+            hit.GetComponent<BulletStandardDestroy>().owner = owner;
 
             if (rb != null)
             {
-                rb.velocity = -rb.velocity * 1.5f;
+                rb.velocity = -rb.velocity * 2.0f;
             }
 
         }

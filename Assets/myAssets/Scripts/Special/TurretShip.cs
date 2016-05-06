@@ -17,11 +17,16 @@ public class TurretShip : NetworkBehaviour
     
     void Start () {
         Destroy(gameObject, 10.0f);
+
+        if (!isServer)      return;
+        
         target = owner.gameObject.transform;
         bulletPrefab = owner.bulletPrefabs[0];
 	}
 	
 	void Update () {
+        if (!isServer) return;
+
         transform.position = target.position;
         transform.LookAt(target.position + owner.getForward());
 
