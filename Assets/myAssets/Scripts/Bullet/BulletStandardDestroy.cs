@@ -28,7 +28,7 @@ public class BulletStandardDestroy : MonoBehaviour {
         var health = hit.GetComponent<PlayerHealth>();
 
 
-        if (health != null)
+        if (health != null && hit.GetComponent<CubeMovement>() != owner)
         {
 
             ParticleSystemRenderer p = enemyHitEffectPrefab.GetComponent<ParticleSystemRenderer>();

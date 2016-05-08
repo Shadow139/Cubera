@@ -15,31 +15,22 @@ public class TurretShip : NetworkBehaviour
     
     void Start () {
         Destroy(gameObject, 10.0f);
-        setOwnerOnClient();        
-        
+        //if (!isServer) return;
+
+        setOwnerOnClient();
         target = owner.gameObject.transform;
         bulletPrefab = owner.bulletPrefabs[0];
 	}
 	
 	void Update () {
+        //if (!isServer) return;
 
         transform.position = target.position;
         transform.LookAt(target.position + owner.getForward());
-
-        if (!isServer) return;
-
-        if (Time.time > 0.2 + lastShot)
-        {
-            bulletDirection = owner.getForward();
-            CmdFire(owner.getRight(), bulletDirection, 50);
-            CmdFire(-owner.getRight(), bulletDirection, 50);
-
-            lastShot = Time.time;
-        }
     }
 
     [Command]
-    void CmdFire(Vector3 offset, Vector3 direction, float speed)
+    void CmdTurretFire(Vector3 offset, Vector3 direction, float speed)
     {
         var bullet = (GameObject)Instantiate(
             bulletPrefab,

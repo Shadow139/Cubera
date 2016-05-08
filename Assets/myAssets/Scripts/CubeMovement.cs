@@ -47,6 +47,8 @@ public class CubeMovement : NetworkBehaviour
     private UI uiScript;
     private NetworkClient nClient;
     private int latency;
+    private bool hasTurret = false;
+    private float lastTurretShot = 0.0f;
     #endregion
 
     #region Network Synced
@@ -131,6 +133,9 @@ public class CubeMovement : NetworkBehaviour
         {
             rollNewSpecial();
         }
+
+        if (hasTurret && hasShootingInput())
+            fireTurret();
     }
 
     void FixedUpdate()
@@ -214,6 +219,33 @@ public class CubeMovement : NetworkBehaviour
     }
 
     [Command]
+    void CmdTurretFire(Vector3 offset, Vector3 direction, float speed)
+    {
+        var bullet = (GameObject)Instantiate(
+            bulletPrefabs[0],
+            transform.position + (offset) + direction * 2,
+            Quaternion.identity);
+
+        BulletStandardDestroy bulletScript = bullet.GetComponent<BulletStandardDestroy>();
+
+        bullet.GetComponent<Rigidbody>().velocity = direction * speed;
+        bulletScript.owner = this;
+
+        NetworkServer.Spawn(bullet);
+    }
+
+    void fireTurret()
+    {
+        if (Time.time > 0.2 + lastTurretShot)
+        {
+            CmdTurretFire(getRight(), getForward(), 50);
+            CmdTurretFire(-getRight(), getForward(), 50);
+
+            lastTurretShot = Time.time;
+        }
+    }
+
+    [Command]
     void CmdExplosion(int current)
     {
         GameObject special = (GameObject)Instantiate(
@@ -242,6 +274,8 @@ public class CubeMovement : NetworkBehaviour
                 break;
             case 3:
                 CmdTurretship(rollValue);
+                hasTurret = true;
+                StartCoroutine(disableTurret(10.9f));
                 GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
                 break;
             case 4:
@@ -284,6 +318,12 @@ public class CubeMovement : NetworkBehaviour
         isAbleToTackle = true;
         GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().setRush();
 
+    }
+
+    private IEnumerator disableTurret(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        hasTurret = false;
     }
 
     public void switchMode(int change)
