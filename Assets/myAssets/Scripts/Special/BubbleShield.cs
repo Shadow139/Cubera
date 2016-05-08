@@ -8,7 +8,7 @@ public class BubbleShield : NetworkBehaviour
     public Transform target;
 
     void Start () {
-        Destroy(gameObject, 10.0f);
+        Destroy(gameObject, 15.0f);
 
         if (!isServer) return;
 

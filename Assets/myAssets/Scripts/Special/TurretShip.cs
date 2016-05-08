@@ -14,7 +14,7 @@ public class TurretShip : NetworkBehaviour
     private float lastShot = 0.0f;
     
     void Start () {
-        Destroy(gameObject, 10.0f);
+        Destroy(gameObject, 15.0f);
         //if (!isServer) return;
 
         setOwnerOnClient();

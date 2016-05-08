@@ -276,7 +276,7 @@ public class CubeMovement : NetworkBehaviour
                 CmdTurretship(rollValue);
                 hasTurret = true;
                 StartCoroutine(disableTurret(10.9f));
-                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
                 break;
             case 4:
                 CmdBladedancer(rollValue);
@@ -284,7 +284,7 @@ public class CubeMovement : NetworkBehaviour
                 break;
             case 5:
                 CmdBubbleshield(rollValue);
-                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
                 break;
             case 6:
                 break;
@@ -427,7 +427,7 @@ public class CubeMovement : NetworkBehaviour
         }
         hasSpecialSkill = true;
         isAbleToRoll = false;
-        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(30.5f);
+        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(60.5f);
         uiScript.changeSpecialIcon(rollValue);
     }
 

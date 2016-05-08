@@ -15,7 +15,7 @@ public class BladeDancer : NetworkBehaviour
 
 
     void Start () {
-        Destroy(gameObject, 15.0f);
+        Destroy(gameObject, 35.0f);
 
         if (!isServer) return;
 
