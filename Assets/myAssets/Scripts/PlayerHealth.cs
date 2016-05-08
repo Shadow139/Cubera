@@ -83,6 +83,7 @@ public class PlayerHealth : NetworkBehaviour
                 currentHealth = maxHealth;
                 RpcRespawn(color);
 
+                this.gameObject.GetComponent<CubeMovement>().deaths += 1;
                 owner.kills += 1;
                 owner.score += 50;
             }

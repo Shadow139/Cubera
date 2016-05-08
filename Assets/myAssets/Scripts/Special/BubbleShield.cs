@@ -4,7 +4,6 @@ using System.Collections;
 
 public class BubbleShield : NetworkBehaviour
 {
-
     public CubeMovement owner;
     public Transform target;
 
@@ -27,17 +26,23 @@ public class BubbleShield : NetworkBehaviour
     {
         var hit = other.gameObject;
 
-        if (other.gameObject.CompareTag("Bullet"))
+        if (other.gameObject.CompareTag("Bullet") && !(other.gameObject.GetComponent<BulletStandardDestroy>().owner == owner))
         {
-            var rb = hit.GetComponent<Rigidbody>();
-
             hit.GetComponent<BulletStandardDestroy>().owner = owner;
 
-            if (rb != null)
-            {
-                rb.velocity = -rb.velocity * 2.0f;
-            }
+            RpcReverseBullet(hit);
 
+        }
+    }
+
+    [ClientRpc]
+    public void RpcReverseBullet(GameObject bullet)
+    {
+        var rb = bullet.GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            rb.velocity = -(rb.velocity * 1.5f);
         }
     }
 }

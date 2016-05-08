@@ -54,6 +54,8 @@ public class CubeMovement : NetworkBehaviour
     public int score;
     [SyncVar(hook = "OnKillsChanged")]
     public int kills;
+    [SyncVar(hook = "OnDeathsChanged")]
+    public int deaths;
     [SyncVar]
     public Color color = Color.white;
     [SyncVar]
@@ -211,6 +213,20 @@ public class CubeMovement : NetworkBehaviour
         NetworkServer.Spawn(special);
     }
 
+    [Command]
+    void CmdExplosion(int current)
+    {
+        GameObject special = (GameObject)Instantiate(
+            specialPrefab[current],
+            transform.position,
+            Quaternion.identity);
+
+        Explosion script = special.GetComponent<Explosion>();
+        script.owner = this;
+
+        NetworkServer.Spawn(special);
+    }
+
     void checkSpecialSkill()
     {
         switch (rollValue)
@@ -222,6 +238,7 @@ public class CubeMovement : NetworkBehaviour
 
                 break;
             case 2:
+                CmdExplosion(rollValue);
                 break;
             case 3:
                 CmdTurretship(rollValue);
@@ -229,13 +246,13 @@ public class CubeMovement : NetworkBehaviour
                 break;
             case 4:
                 CmdBladedancer(rollValue);
-                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
                 break;
             case 5:
-                break;
-            case 6:
                 CmdBubbleshield(rollValue);
                 GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(10.9f);
+                break;
+            case 6:
                 break;
             default:
                 break;
@@ -262,8 +279,11 @@ public class CubeMovement : NetworkBehaviour
 
     private IEnumerator enableTackle(float seconds)
     {
+        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().setNoRush();
         yield return new WaitForSeconds(seconds);
         isAbleToTackle = true;
+        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().setRush();
+
     }
 
     public void switchMode(int change)
@@ -367,7 +387,7 @@ public class CubeMovement : NetworkBehaviour
         }
         hasSpecialSkill = true;
         isAbleToRoll = false;
-        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(10.0f);
+        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(0.1f);
         uiScript.changeSpecialIcon(rollValue);
     }
 
@@ -544,6 +564,11 @@ public class CubeMovement : NetworkBehaviour
         kills = newValue;
     }
 
+    void OnDeathsChanged(int newValue)
+    {
+        deaths = newValue;
+    }
+    
     public Vector3 getForward()
     {
         return forwardForce;

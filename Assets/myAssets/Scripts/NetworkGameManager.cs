@@ -12,7 +12,8 @@ public class NetworkGameManager : NetworkBehaviour
     
     public Text[] playerNames;
     public Text[] playerScores;
-    public Text[] playerLatencys;
+    public Text[] playerKills;
+    public Text[] playerDeaths;
 
     public static bool gameover = false;
 
@@ -48,18 +49,21 @@ public class NetworkGameManager : NetworkBehaviour
             {
                 playerNames[i].color = Color.yellow;
                 playerScores[i].color = Color.yellow;
-                playerLatencys[i].color = Color.yellow;
+                playerKills[i].color = Color.yellow;
+                playerDeaths[i].color = Color.yellow;
             }
             else
             {
                 playerNames[i].color = Color.white;
                 playerScores[i].color = Color.white;
-                playerLatencys[i].color = Color.white;
+                playerKills[i].color = Color.white;
+                playerDeaths[i].color = Color.white;
             }
 
             playerNames[i].text = p.playerName;
             playerScores[i].text = p.score + "";
-            playerLatencys[i].text = p.kills + "";
+            playerKills[i].text = p.kills + "";
+            playerDeaths[i].text = p.deaths + "";
 
             i++;
         }
