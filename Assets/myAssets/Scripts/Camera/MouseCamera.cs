@@ -67,9 +67,9 @@ public class MouseCamera : MonoBehaviour {
             cameraUsed.tag = "MainCamera";
         }
 
-        if (!cameraUsed.GetComponent("RPG_Camera"))
+        if (!cameraUsed.GetComponent("MouseCamera"))
             cameraUsed.AddComponent<MouseCamera>();
-        cameraScript = cameraUsed.GetComponent("RPG_Camera") as MouseCamera;
+        cameraScript = cameraUsed.GetComponent("MouseCamera") as MouseCamera;
 
         cameraPivot = GameObject.Find("cameraPivot") as GameObject;
         cameraScript.cameraPivot = cameraPivot.transform;
