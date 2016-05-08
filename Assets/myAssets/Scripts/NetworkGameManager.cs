@@ -96,7 +96,7 @@ public class NetworkGameManager : NetworkBehaviour
             }
             else
             {
-                tmp = 0;
+                return _objA.playerName.CompareTo(_objB.playerName);
             }
 
             return tmp;

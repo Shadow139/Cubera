@@ -427,7 +427,7 @@ public class CubeMovement : NetworkBehaviour
         }
         hasSpecialSkill = true;
         isAbleToRoll = false;
-        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(0.1f);
+        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(30.5f);
         uiScript.changeSpecialIcon(rollValue);
     }
 
