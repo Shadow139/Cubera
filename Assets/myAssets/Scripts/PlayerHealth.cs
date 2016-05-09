@@ -151,15 +151,17 @@ public class PlayerHealth : NetworkBehaviour
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
         }
+        transform.position = new Vector3(0.0f,1000.0f,0.0f);
+
         StartCoroutine(respawn(spawnPoint));
     }
 
     private IEnumerator respawn(Vector3 spawn)
     {
         Renderer rend = this.gameObject.GetComponent<Renderer>();
-        transform.position = spawn;
         rend.enabled = false;
         yield return new WaitForSeconds(5.0f);
+        transform.position = spawn;
         healthBar.SetActive(true);
 
         if (isLocalPlayer)
