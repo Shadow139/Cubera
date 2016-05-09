@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
-public class HealthPack : MonoBehaviour {
+public class HealthPack : NetworkBehaviour
+{
 
     public float amount;
 
@@ -22,8 +24,12 @@ public class HealthPack : MonoBehaviour {
 
                 health.heal(amount);
             }
-            var respawn = FindObjectOfType<PowerUpSpawner>();
-            respawn.respawn(transform, 25.0f, 40.0f);
+
+            if (isServer)
+            {
+                var respawn = FindObjectOfType<PowerUpSpawner>();
+                respawn.respawn(transform, 20.0f, 30.0f);
+            }
 
             Destroy(gameObject);
         }
