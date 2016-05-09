@@ -275,12 +275,12 @@ public class CubeMovement : NetworkBehaviour
             case 3:
                 CmdTurretship(rollValue);
                 hasTurret = true;
-                StartCoroutine(disableTurret(10.9f));
+                StartCoroutine(disableTurret(15.9f));
                 GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
                 break;
             case 4:
                 CmdBladedancer(rollValue);
-                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
+                GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(25.9f);
                 break;
             case 5:
                 CmdBubbleshield(rollValue);
@@ -308,7 +308,7 @@ public class CubeMovement : NetworkBehaviour
         isAbleToTackle = false;
         rb.AddTorque(rotateHorizontal * 20, ForceMode.Impulse);
         rb.AddForce(forwardForce * 15, ForceMode.Impulse);
-        StartCoroutine(enableTackle(10.0f));
+        StartCoroutine(enableTackle(5.0f));
     }
 
     private IEnumerator enableTackle(float seconds)
