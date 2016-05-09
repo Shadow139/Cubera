@@ -57,6 +57,7 @@ public class BladeDancer : NetworkBehaviour
             p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;
 
             Instantiate(enemyHitEffectPrefab, transform.position, Quaternion.identity);
+
             health.TakeDamage(25.0f, owner);
         }
         else

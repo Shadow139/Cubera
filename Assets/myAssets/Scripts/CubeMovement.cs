@@ -49,6 +49,7 @@ public class CubeMovement : NetworkBehaviour
     private int latency;
     private bool hasTurret = false;
     private float lastTurretShot = 0.0f;
+    private float timeWithoutMovement = 0.0f;
     #endregion
 
     #region Network Synced
@@ -129,13 +130,27 @@ public class CubeMovement : NetworkBehaviour
         if (hasSwitchingBulletInput())
             switchCurrentBullet();
 
-        if (hasStopped() && isAbleToRoll)
+        if (hasStopped())
+        {
+            timeWithoutMovement += Time.deltaTime;
+        }
+        else
+        {
+            timeWithoutMovement = 0.0f;
+        }
+
+        GameObject.FindGameObjectWithTag("RollLoading").GetComponent<Image>().fillAmount = timeWithoutMovement / 5.0f;
+
+        if (hasStopped() && timeWithoutMovement > 4.99f)
         {
             rollNewSpecial();
         }
 
         if (hasTurret && hasShootingInput())
             fireTurret();
+
+        if (timeWithoutMovement > 5.0f)
+            timeWithoutMovement = 5.0f;
     }
 
     void FixedUpdate()
@@ -426,8 +441,8 @@ public class CubeMovement : NetworkBehaviour
             uiScript = ui.GetComponent<UI>();
         }
         hasSpecialSkill = true;
-        isAbleToRoll = false;
-        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(60.5f);
+        //isAbleToRoll = false;
+        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(1.5f);
         uiScript.changeSpecialIcon(rollValue);
     }
 
