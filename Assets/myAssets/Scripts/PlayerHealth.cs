@@ -151,7 +151,7 @@ public class PlayerHealth : NetworkBehaviour
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
         }
-        transform.position = new Vector3(0.0f,1000.0f,0.0f);
+        transform.position = new Vector3(0.0f,100.0f,0.0f);
 
         StartCoroutine(respawn(spawnPoint));
     }
