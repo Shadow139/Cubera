@@ -41,7 +41,6 @@ public class CubeMovement : NetworkBehaviour
     private BulletStandardDestroy bulletScript;
     private bool isGrounded = false;
     private bool isAbleToTackle = true;
-    private bool isAbleToRoll = false;
     private bool hasSpecialSkill = false;
     private GameObject ui;
     private UI uiScript;
@@ -66,10 +65,6 @@ public class CubeMovement : NetworkBehaviour
 
     #endregion
     
-    void Awake()
-    {
-    }
-
     void Start()
     {
         NetworkGameManager.sPlayers.Add(this);
@@ -89,13 +84,9 @@ public class CubeMovement : NetworkBehaviour
         mainCamera.SetActive(false);
         rb = GetComponent<Rigidbody>();
         nClient = GameObject.Find("LobbyManager").GetComponent<NetworkManager>().client;
-
-        /*foreach(GameObject b in bulletPrefabs)
-        {
-            b.GetComponent<MeshRenderer>().sharedMaterial.color = color; 
-        }*/
+        
     }
-
+    #region Update Functions
     void Update()
     {
 
@@ -117,17 +108,16 @@ public class CubeMovement : NetworkBehaviour
             checkSpecialSkill();
         }
 
-        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0)))
+        if (isGrounded && (Input.GetButton("Jump") || Input.GetAxis("LeftTrigger") > 0))
             Jump();
 
         if (Input.GetKeyDown(KeyCode.Backspace))
             toggleLethalBullets();
 
 
-        if (isAbleToTackle && Input.GetKeyDown(KeyCode.LeftShift))
+        if (isAbleToTackle && (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetButton("Rush")))
             Tackle();
 
-        if (hasSwitchingBulletInput())
             switchCurrentBullet();
 
         if (hasStopped())
@@ -138,9 +128,7 @@ public class CubeMovement : NetworkBehaviour
         {
             timeWithoutMovement = 0.0f;
         }
-
-        GameObject.FindGameObjectWithTag("RollLoading").GetComponent<Image>().fillAmount = timeWithoutMovement / 5.0f;
-
+        
         if (hasStopped() && timeWithoutMovement > 4.99f)
         {
             rollNewSpecial();
@@ -151,6 +139,7 @@ public class CubeMovement : NetworkBehaviour
 
         if (timeWithoutMovement > 5.0f)
             timeWithoutMovement = 5.0f;
+
     }
 
     void FixedUpdate()
@@ -169,12 +158,14 @@ public class CubeMovement : NetworkBehaviour
         rb.AddForce(forwardForce * moveVertical * 0.002f);
         rb.AddForce(rightForce * moveHorizontal * 0.002f);        
     }
+    #endregion
 
     void OnCollisionStay() //check if you are colliding with the ground
     {
         isGrounded = true;
     }
 
+    #region [Commands]
     [Command]
     void CmdFire(int current, Vector3 offset, Vector3 direction, float speed)
     {
@@ -237,7 +228,7 @@ public class CubeMovement : NetworkBehaviour
     void CmdTurretFire(Vector3 offset, Vector3 direction, float speed)
     {
         var bullet = (GameObject)Instantiate(
-            bulletPrefabs[0],
+            bulletPrefabs[2],
             transform.position + (offset) + direction * 2,
             Quaternion.identity);
 
@@ -247,17 +238,6 @@ public class CubeMovement : NetworkBehaviour
         bulletScript.owner = this;
 
         NetworkServer.Spawn(bullet);
-    }
-
-    void fireTurret()
-    {
-        if (Time.time > 0.2 + lastTurretShot)
-        {
-            CmdTurretFire(getRight(), getForward(), 50);
-            CmdTurretFire(-getRight(), getForward(), 50);
-
-            lastTurretShot = Time.time;
-        }
     }
 
     [Command]
@@ -272,6 +252,18 @@ public class CubeMovement : NetworkBehaviour
         script.owner = this;
 
         NetworkServer.Spawn(special);
+    }
+    #endregion
+    
+    void fireTurret()
+    {
+        if (Time.time > 0.3 + lastTurretShot)
+        {
+            CmdTurretFire(getRight(), getForward(), 50);
+            CmdTurretFire(-getRight(), getForward(), 50);
+
+            lastTurretShot = Time.time;
+        }
     }
 
     void checkSpecialSkill()
@@ -328,11 +320,9 @@ public class CubeMovement : NetworkBehaviour
 
     private IEnumerator enableTackle(float seconds)
     {
-        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().setNoRush();
+        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().startCooldown();
         yield return new WaitForSeconds(seconds);
         isAbleToTackle = true;
-        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().setRush();
-
     }
 
     private IEnumerator disableTurret(float seconds)
@@ -341,82 +331,27 @@ public class CubeMovement : NetworkBehaviour
         hasTurret = false;
     }
 
-    public void switchMode(int change)
-    {
-        mode += change;
-
-        if (mode < 0)
-            mode = 3;
-
-        if (mode > 3)
-            mode = 0;
-
-        if(mode == 0)
-        {
-            rotateHorizontal = Vector3.back;
-            rotateVertical = Vector3.right;
-
-            forwardForce = Vector3.forward;
-            rightForce = Vector3.right;
-
-            bulletOffset = Vector3.forward;
-            bulletDirection = Vector3.forward;
-        }
-        else if(mode == 1)
-        {
-            rotateHorizontal = Vector3.left;
-            rotateVertical = Vector3.back;
-
-            forwardForce = Vector3.right;
-            rightForce = Vector3.back;
-
-            bulletOffset = Vector3.right;
-            bulletDirection = Vector3.right;
-        }
-        else if (mode == 2)
-        {
-            rotateHorizontal = Vector3.forward;
-            rotateVertical = Vector3.left;
-
-            forwardForce = Vector3.back;
-            rightForce = Vector3.left;
-
-            bulletOffset = Vector3.back;
-            bulletDirection = Vector3.back;            
-        }
-        else if (mode == 3)
-        {
-            rotateHorizontal = Vector3.right;
-            rotateVertical = Vector3.forward;
-
-            forwardForce = Vector3.left;
-            rightForce = Vector3.forward;
-
-            bulletOffset = Vector3.left;
-            bulletDirection = Vector3.left;
-        }
-
-    }
-
     void switchCurrentBullet()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1) || (Input.GetAxis("DPadY") < 0))
         {
             bullet = 0;
         }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Input.GetKeyDown(KeyCode.Alpha2) || (Input.GetAxis("DPadX") < 0))
         {
             bullet = 1;
         }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        if (Input.GetKeyDown(KeyCode.Alpha3) || (Input.GetAxis("DPadY") > 0))
         {
             bullet = 2;
         }
+
+
         if (Input.GetAxis("Mouse ScrollWheel") > 0) // forward
         {
             bullet++;
         }
-        if (Input.GetAxis("Mouse ScrollWheel") < 0) // back
+        if (Input.GetAxis("Mouse ScrollWheel") < 0 ) // back
         {
             bullet--;
         }
@@ -425,10 +360,11 @@ public class CubeMovement : NetworkBehaviour
         if(ui == null || uiScript == null)
         {
             ui = GameObject.FindGameObjectWithTag("UI");
-            uiScript = ui.GetComponent<UI>();
+            if(ui != null)
+                uiScript = ui.GetComponent<UI>();
         }
-        
-        uiScript.changeBulletIcon(bullet);
+        if(uiScript != null)
+            uiScript.changeBulletIcon(bullet);
     }
 
     void rollNewSpecial()
@@ -441,8 +377,7 @@ public class CubeMovement : NetworkBehaviour
             uiScript = ui.GetComponent<UI>();
         }
         hasSpecialSkill = true;
-        //isAbleToRoll = false;
-        GameObject.FindGameObjectWithTag("RollCooldown").GetComponent<CountdownScript>().startCountdownSeconds(1.5f);
+        timeWithoutMovement = 0.0f;
         uiScript.changeSpecialIcon(rollValue);
     }
 
@@ -463,7 +398,7 @@ public class CubeMovement : NetworkBehaviour
     bool hasShootingInput()
     {
         //chocks for Left MouseButton, the Contol Buttons and the Contoller 2nd Trigger Button
-        if(Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKeyDown(KeyCode.Joystick1Button10))
+        if(Input.GetButton("Fire1") || Input.GetAxis("RightTrigger") > 0)
         {
             return true;
         }
@@ -475,7 +410,7 @@ public class CubeMovement : NetworkBehaviour
 
     bool hasSecondaryShootingInput()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetButton("Fire2"))
         {
             return true;
         }
@@ -569,11 +504,6 @@ public class CubeMovement : NetworkBehaviour
         bulletDirection.z = playerCameraObject.transform.forward.z;
     }
 
-    public void setIsAbleToRoll(bool value)
-    {
-        isAbleToRoll = value;
-    }
-
     public int getLatency()
     {
         if(nClient == null)
@@ -584,16 +514,6 @@ public class CubeMovement : NetworkBehaviour
         {
             return nClient.GetRTT();
         }
-    }
-    
-    void OnDestroy()
-    {
-        if(mainCamera != null)
-            mainCamera.SetActive(true);
-
-        Destroy(playerCameraObject);
-        Destroy(miniMapCameraObject);
-        NetworkGameManager.sPlayers.Remove(this);
     }
     
     void OnScoreChanged(int newValue)
@@ -632,6 +552,21 @@ public class CubeMovement : NetworkBehaviour
     public Vector3 getRight()
     {
         return rightForce;
+    }
+
+    public float getTimeWithoutMovement()
+    {
+        return timeWithoutMovement;
+    }
+
+    void OnDestroy()
+    {
+        if (mainCamera != null)
+            mainCamera.SetActive(true);
+
+        Destroy(playerCameraObject);
+        Destroy(miniMapCameraObject);
+        NetworkGameManager.sPlayers.Remove(this);
     }
 
 }

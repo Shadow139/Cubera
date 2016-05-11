@@ -54,7 +54,6 @@ public class CountdownScript : NetworkBehaviour
             if (isRollCooldown)
             {
                 textField.text = "";
-                CubeMovement.player.GetComponent<CubeMovement>().setIsAbleToRoll(true);
             }
             if (isGameCountdown)
             {

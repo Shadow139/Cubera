@@ -179,7 +179,6 @@ public class PlayerHealth : NetworkBehaviour
     void OnChangedArmor(float newValue)
     {
         currentArmor = newValue;
-        healthBarRect[3].sizeDelta = new Vector2(newValue * 2, healthBarRect[3].sizeDelta.y);
     }
 
     void OnDestroy()
