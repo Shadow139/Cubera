@@ -13,6 +13,7 @@ public class CubeMovement : NetworkBehaviour
     public GameObject playerCameraObject;
     private GameObject miniMapCameraObject;
     private GameObject mainCamera;
+    [SerializeField]private GameObject cubeIconPrefab;
     #endregion
 
     #region lookDirections
@@ -49,6 +50,9 @@ public class CubeMovement : NetworkBehaviour
     private bool hasTurret = false;
     private float lastTurretShot = 0.0f;
     private float timeWithoutMovement = 0.0f;
+
+    private bool loadingBomb = false;
+    private float bombTimer = 0.0f;
     #endregion
 
     #region Network Synced
@@ -68,12 +72,16 @@ public class CubeMovement : NetworkBehaviour
     void Start()
     {
         NetworkGameManager.sPlayers.Add(this);
-        GetComponent<MeshRenderer>().material.color = color;        
+        GetComponent<MeshRenderer>().material.color = color;
+        GameObject cubeIcon = (GameObject)Instantiate(cubeIconPrefab, transform.position, Quaternion.identity);
+        cubeIcon.GetComponent<MeshRenderer>().material.color = color;
+        cubeIcon.GetComponent<IconFollow>().followObject = this.gameObject;
     }
 
     public override void OnStartLocalPlayer()
     {
         player = gameObject;
+
 
         Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15, Vector3.right));
         playerCamera.gameObject.GetComponent<MouseCamera>().cameraPivot = transform;
@@ -104,9 +112,13 @@ public class CubeMovement : NetworkBehaviour
         }
 
         if (hasSecondaryShootingInput() && hasSpecialSkill)
-        {
             checkSpecialSkill();
-        }
+
+        if (!hasSecondaryShootingInput())
+            loadingBomb = false;
+
+        if (!loadingBomb)
+            bombTimer -= Time.deltaTime;
 
         if (isGrounded && (Input.GetButton("Jump") || Input.GetAxis("LeftTrigger") > 0))
             Jump();
@@ -140,6 +152,11 @@ public class CubeMovement : NetworkBehaviour
         if (timeWithoutMovement > 5.0f)
             timeWithoutMovement = 5.0f;
 
+        if (bombTimer < 0.0f)
+            bombTimer = 0.0f;
+
+        if (bombTimer > 3.99f)
+            bombTimer = 4.0f;
     }
 
     void FixedUpdate()
@@ -277,20 +294,31 @@ public class CubeMovement : NetworkBehaviour
 
                 break;
             case 2:
-                CmdExplosion(rollValue);
+                if(bombTimer > 3.98f)
+                {
+                    CmdExplosion(rollValue);
+                    adjustSpecialSkill();
+                    bombTimer = 0.0f;
+                }
+
+                bombTimer += Time.deltaTime;
+                loadingBomb = true;
                 break;
             case 3:
                 CmdTurretship(rollValue);
                 hasTurret = true;
                 StartCoroutine(disableTurret(15.9f));
+                adjustSpecialSkill();
                 GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
                 break;
             case 4:
                 CmdBladedancer(rollValue);
+                adjustSpecialSkill();
                 GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(25.9f);
                 break;
             case 5:
                 CmdBubbleshield(rollValue);
+                adjustSpecialSkill();
                 GameObject.FindGameObjectWithTag("SpecialActivationtime").GetComponent<CountdownScript>().startCountdownSeconds(15.9f);
                 break;
             case 6:
@@ -299,6 +327,10 @@ public class CubeMovement : NetworkBehaviour
                 break;
         }
 
+    }
+
+    void adjustSpecialSkill()
+    {
         hasSpecialSkill = false;
         rollValue = 0;
         uiScript.changeSpecialIcon(rollValue);
@@ -557,6 +589,11 @@ public class CubeMovement : NetworkBehaviour
     public float getTimeWithoutMovement()
     {
         return timeWithoutMovement;
+    }
+
+    public float getBombLoadingTime()
+    {
+        return bombTimer;
     }
 
     void OnDestroy()

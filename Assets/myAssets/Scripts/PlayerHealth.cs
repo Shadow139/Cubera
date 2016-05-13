@@ -38,13 +38,15 @@ public class PlayerHealth : NetworkBehaviour
         spawnPoints = FindObjectsOfType<NetworkStartPosition>();
     }
 
-
     void Update()
     {
         HealthStatus();
 
         if(healthBar != null)
             healthBar.transform.position = gameObject.transform.position + healthBarOffset;
+
+        if (transform.position.y < -75)
+            RpcRespawn(color);
     }
 
     void HealthStatus()
@@ -81,6 +83,8 @@ public class PlayerHealth : NetworkBehaviour
             else
             {
                 currentHealth = maxHealth;
+
+                RpcShowKill(owner.playerName, this.gameObject.GetComponent<CubeMovement>().playerName, owner.color, color, 0);
                 RpcRespawn(color);
 
                 this.gameObject.GetComponent<CubeMovement>().deaths += 1;
@@ -131,19 +135,6 @@ public class PlayerHealth : NetworkBehaviour
 
         if (isLocalPlayer)
         {
-            /*
-            GameObject panel = GameObject.Find("RespawnPanel");
-            Text[] textObjects = panel.GetComponentsInChildren<Text>();
-
-            foreach (Text t in textObjects)
-            {
-                t.enabled = true;
-
-                CountdownScript scr = t.GetComponent<CountdownScript>();
-                if (scr != null)
-                    scr.startCountdownSeconds(5.0f);
-            }*/
-
             GameObject.FindGameObjectWithTag("PlayerCamera").GetComponent<MouseCamera>().setCameraPivot(particle.transform);
 
             if (spawnPoints != null && spawnPoints.Length > 0)
@@ -154,6 +145,15 @@ public class PlayerHealth : NetworkBehaviour
         transform.position = new Vector3(0.0f,100.0f,0.0f);
 
         StartCoroutine(respawn(spawnPoint));
+    }
+
+    [ClientRpc]
+    void RpcShowKill(string p1,string p2, Vector4 p1Col, Vector4 p2Col, int method)
+    {
+        Debug.Log(p1 + " killed " + p2);
+
+        GameObject.FindGameObjectWithTag("KillList").GetComponent<ListOfKilledPlayers>().addDeadPlayerToLisz(p1,p2,p1Col,p2Col);
+
     }
 
     private IEnumerator respawn(Vector3 spawn)

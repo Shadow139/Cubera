@@ -4,7 +4,7 @@ using System.Collections;
 public class MiniMapFollow : MonoBehaviour {
 
     private GameObject player;
-    public float miniMapHeight = 20.0f;
+    public float miniMapHeight = 100.0f;
 
     void LateUpdate () {
         if (!player)

@@ -14,6 +14,7 @@ namespace UnityStandardAssets.Network
         static Color[] Colors = new Color[] { Color.magenta, Color.red, Color.cyan, Color.blue, Color.green, Color.yellow, new Color(1.0f, 0.5f, 0.0f)/*orange*/, new Color(0.6f, 0.6f, 0.6f)/*gray*/, new Color(138.0f / 255.0f, 43.0f / 255.0f, 226.0f / 255.0f)/*blue violet*/,
                                                new Color(210.0f / 255.0f,105.0f / 255.0f,30.0f / 255.0f)/*chocolate*/, new Color(0.0f / 255.0f,139.0f / 255.0f,0.0f / 255.0f)/*forest green*/, new Color(135.0f / 255.0f,206.0f / 255.0f,250.0f / 255.0f)/*lightblue*/, new Color(255.0f / 255.0f,187.0f / 255.0f,200.0f / 255.0f),/*light pink*/
         new Color(171.0f / 255.0f,130.0f / 255.0f,255.0f / 255.0f)/*light purple*/, new Color(192.0f / 255.0f,255.0f / 255.0f,62.0f / 255.0f)/*light olive*/, new Color(78.0f / 255.0f,238.0f / 255.0f,148.0f / 255.0f)/*seagreen*/};
+
         //used on server to avoid assigning the same color to two player
         static List<int> _colorInUse = new List<int>();
 
@@ -31,6 +32,7 @@ namespace UnityStandardAssets.Network
         public string playerName = "";
         [SyncVar(hook = "OnMyColor")]
         public Color playerColor = Color.white;
+
 
         public Color OddRowColor = new Color(250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f, 1.0f);
         public Color EvenRowColor = new Color(180.0f / 255.0f, 180.0f / 255.0f, 180.0f / 255.0f, 1.0f);

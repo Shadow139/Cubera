@@ -17,19 +17,31 @@ public class BladeDancer : NetworkBehaviour
     void Start () {
         Destroy(gameObject, 25.0f);
 
-        if (!isServer) return;
+        if (isClient)
+        {
+            GameObject[] gObjs = GameObject.FindGameObjectsWithTag("Player");
+
+            float min = 99999.0f;
+
+            foreach (GameObject g in gObjs)
+            {
+                float dist = Vector3.Distance(transform.position, g.transform.position);
+
+                if (dist < min)
+                {
+                    min = dist;
+                    owner = g.GetComponent<CubeMovement>();
+                }
+            }
+        }
+        ///if (!isServer) return;
 
         target = owner.gameObject.transform;
     }
 
-    void Update () {
-	
-	}
-
     void LateUpdate()
     {
-        if (!isServer) return;
-
+        //if (!isServer) return;
         Orbit();
     }
 
@@ -41,32 +53,6 @@ public class BladeDancer : NetworkBehaviour
             transform.position = target.position + (transform.position - target.position).normalized * orbitDistance;
             transform.RotateAround(target.position, Vector3.up, orbitDegreesPerSec * Time.deltaTime);
         }
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-
-        var hit = collision.gameObject;
-        var health = hit.GetComponent<PlayerHealth>();
-
-
-        if (health != null)
-        {
-
-            ParticleSystemRenderer p = enemyHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
-            p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;
-
-            Instantiate(enemyHitEffectPrefab, transform.position, Quaternion.identity);
-
-            health.TakeDamage(25.0f, owner);
-        }
-        else
-        {
-            //Instantiate(playerHitEffectPrefab, transform.position, Quaternion.identity);
-        }
-
-        if (false)
-            Destroy(gameObject);
     }
 
     void OnTriggerEnter(Collider other)
