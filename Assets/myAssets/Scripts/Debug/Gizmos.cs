@@ -51,6 +51,9 @@ public class Gizmos : MonoBehaviour
                 Debug.DrawLine(CubeMovement.player.transform.position, CubeMovement.player.transform.position + (-CubeMovement.player.transform.up), Color.green);
                 Debug.DrawLine(CubeMovement.player.transform.position, CubeMovement.player.transform.position + CubeMovement.player.transform.forward, Color.blue);
                 Debug.DrawLine(CubeMovement.player.transform.position, CubeMovement.player.transform.position + (-CubeMovement.player.transform.forward), Color.blue);
+
+                Debug.DrawLine(CubeMovement.player.transform.position, CubeMovement.player.transform.position + (CubeMovement.player.GetComponent<CubeMovement>().getForward()), Color.magenta);
+
             }
         }
         else

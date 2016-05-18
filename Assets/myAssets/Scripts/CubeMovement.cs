@@ -76,6 +76,9 @@ public class CubeMovement : NetworkBehaviour
         GameObject cubeIcon = (GameObject)Instantiate(cubeIconPrefab, transform.position, Quaternion.identity);
         cubeIcon.GetComponent<MeshRenderer>().material.color = color;
         cubeIcon.GetComponent<IconFollow>().followObject = this.gameObject;
+
+        if (isLocalPlayer)
+            cubeIcon.SetActive(false);
     }
 
     public override void OnStartLocalPlayer()
@@ -603,7 +606,7 @@ public class CubeMovement : NetworkBehaviour
 
         Destroy(playerCameraObject);
         Destroy(miniMapCameraObject);
-        NetworkGameManager.sPlayers.Remove(this);
+        //NetworkGameManager.sPlayers.Remove(this);
     }
 
 }

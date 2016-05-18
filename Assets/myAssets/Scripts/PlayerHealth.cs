@@ -152,7 +152,7 @@ public class PlayerHealth : NetworkBehaviour
     {
         Debug.Log(p1 + " killed " + p2);
 
-        GameObject.FindGameObjectWithTag("KillList").GetComponent<ListOfKilledPlayers>().addDeadPlayerToLisz(p1,p2,p1Col,p2Col);
+        GameObject.FindGameObjectWithTag("KillList").GetComponent<ListOfKilledPlayers>().addDeadPlayerToList(p1,p2,p1Col,p2Col);
 
     }
 

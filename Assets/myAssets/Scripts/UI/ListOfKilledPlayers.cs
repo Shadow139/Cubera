@@ -7,13 +7,13 @@ public class ListOfKilledPlayers : MonoBehaviour {
     [SerializeField] private GameObject[] slots;
     private int index = 0;
 
-    public void addDeadPlayerToLisz(string p1, string p2, Vector4 p1Col, Vector4 p2Col)
+    public void addDeadPlayerToList(string p1, string p2, Vector4 p1Col, Vector4 p2Col)
     {
-        if(index < 5)
+        if(index < 10)
         {
             checkIfDisabled();
 
-            Text[] txt = slots[index % 5].GetComponentsInChildren<Text>();
+            Text[] txt = slots[index % 10].GetComponentsInChildren<Text>();
             txt[0].text = p1;
             txt[0].color = p1Col;
             txt[1].text = p2;
@@ -30,14 +30,14 @@ public class ListOfKilledPlayers : MonoBehaviour {
 
     void checkIfDisabled()
     {
-        if (slots[index % 5].active == false)
-            slots[index % 5].active = true;
+        if (slots[index % 10].active == false)
+            slots[index % 10].active = true;
     }
 
     void shiftList(string p1, string p2, Vector4 p1Col, Vector4 p2Col)
     {
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 9; i++)
         {
 
             Text[] txt_prev = slots[i].GetComponentsInChildren<Text>();
@@ -50,7 +50,7 @@ public class ListOfKilledPlayers : MonoBehaviour {
             txt_prev[1].color = txt[1].color;
         }
 
-        Text[] txt_last = slots[4].GetComponentsInChildren<Text>();
+        Text[] txt_last = slots[9].GetComponentsInChildren<Text>();
         txt_last[0].text = p1;
         txt_last[0].color = p1Col;
         txt_last[1].text = p2;
