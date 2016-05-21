@@ -45,8 +45,8 @@ public class PlayerHealth : NetworkBehaviour
         if(healthBar != null)
             healthBar.transform.position = gameObject.transform.position + healthBarOffset;
 
-        //if (transform.position.y < -75 && isServer)
-          //  RpcRespawn(color);
+        if (transform.position.y < -75 && isServer)
+            RpcRespawn();
     }
 
     void HealthStatus()
@@ -145,9 +145,29 @@ public class PlayerHealth : NetworkBehaviour
             }
         }
         gameObject.GetComponent<CubeMovement>().rb.velocity = new Vector3(0, 0, 0);
-        transform.position = new Vector3(0.0f,5.0f,400.0f);
+        transform.position = new Vector3(-350.0f,5.0f,400.0f);
 
         StartCoroutine(respawn(spawnPoint));
+    }
+
+    [ClientRpc]
+    void RpcRespawn()
+    {
+        Vector3 spawnPoint = Vector3.zero;
+
+        if (isLocalPlayer)
+        {
+            if (spawnPoints != null && spawnPoints.Length > 0)
+            {
+                spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+            }
+        }
+
+        gameObject.GetComponent<CubeMovement>().rb.velocity = new Vector3(0, 0, 0);
+
+        transform.position = spawnPoint;
+
+
     }
 
     [ClientRpc]

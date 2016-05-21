@@ -121,7 +121,7 @@ public class CubeMovement : NetworkBehaviour
         if (hasSecondaryShootingInput() && hasSpecialSkill)
             checkSpecialSkill();
 
-        if (isGrounded && (Input.GetButton("Jump") || Input.GetAxis("LeftTrigger") > 0))
+        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetAxis("LeftTrigger") > 0))
             Jump();
 
         if (Input.GetKeyDown(KeyCode.Backspace))
@@ -330,7 +330,7 @@ public class CubeMovement : NetworkBehaviour
         audio.clip = jumpSound;
         audio.Play();
         isGrounded = false;
-        rb.AddForce(Vector3.up * jumpSpeed * Time.deltaTime);
+        rb.AddForce(Vector3.up * jumpSpeed);
     }
 
     void Tackle()
