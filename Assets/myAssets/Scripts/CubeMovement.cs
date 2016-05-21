@@ -330,7 +330,7 @@ public class CubeMovement : NetworkBehaviour
         audio.clip = jumpSound;
         audio.Play();
         isGrounded = false;
-        rb.AddForce(Vector3.up * jumpSpeed);
+        rb.AddForce(Vector3.up * jumpSpeed * Time.deltaTime);
     }
 
     void Tackle()

@@ -45,8 +45,8 @@ public class PlayerHealth : NetworkBehaviour
         if(healthBar != null)
             healthBar.transform.position = gameObject.transform.position + healthBarOffset;
 
-        if (transform.position.y < -75 && isServer)
-            RpcRespawn(color);
+        //if (transform.position.y < -75 && isServer)
+          //  RpcRespawn(color);
     }
 
     void HealthStatus()
