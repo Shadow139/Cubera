@@ -144,7 +144,8 @@ public class PlayerHealth : NetworkBehaviour
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
         }
-        transform.position = new Vector3(0.0f,10.0f,400.0f);
+        gameObject.GetComponent<CubeMovement>().rb.velocity = new Vector3(0, 0, 0);
+        transform.position = new Vector3(0.0f,5.0f,400.0f);
 
         StartCoroutine(respawn(spawnPoint));
     }
