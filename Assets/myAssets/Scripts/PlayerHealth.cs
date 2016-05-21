@@ -46,7 +46,7 @@ public class PlayerHealth : NetworkBehaviour
             healthBar.transform.position = gameObject.transform.position + healthBarOffset;
 
         if (transform.position.y < -75 && isServer)
-            RpcRespawn();
+            RpcRespawn2();
     }
 
     void HealthStatus()
@@ -151,7 +151,7 @@ public class PlayerHealth : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcRespawn()
+    void RpcRespawn2()
     {
         Vector3 spawnPoint = Vector3.zero;
 
