@@ -4,13 +4,15 @@ using System.Collections;
 
 public class HealthPack : NetworkBehaviour
 {
-
-    public float amount;
+    [SerializeField] private float amount;
+    [SerializeField] private GameObject powerUpSound;
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
+            GameObject special = (GameObject)Instantiate(powerUpSound, transform.position, Quaternion.identity);
+
             var hit = other.gameObject;
             var health = hit.GetComponent<PlayerHealth>();
 

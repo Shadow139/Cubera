@@ -60,7 +60,7 @@ public class BladeDancer : NetworkBehaviour
         var hit = other.gameObject;
         var health = hit.GetComponent<PlayerHealth>();
         
-        if (health != null)
+        if (health != null && hit.GetComponent<CubeMovement>() != owner)
         {
             ParticleSystemRenderer p = enemyHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
             p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;

@@ -17,6 +17,8 @@ namespace UnityStandardAssets.Network
 
         public void OnEnable()
         {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             lobbyManager.topPanel.ToggleVisibility(true);
 
             ipInput.onEndEdit.RemoveAllListeners();

@@ -14,7 +14,6 @@ public class MiniMapFollow : MonoBehaviour {
 
     void Start()
     {
-        north = GameObject.FindGameObjectWithTag("North").GetComponent<RectTransform>();
     }
 
     void LateUpdate () {

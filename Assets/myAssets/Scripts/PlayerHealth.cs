@@ -45,7 +45,7 @@ public class PlayerHealth : NetworkBehaviour
         if(healthBar != null)
             healthBar.transform.position = gameObject.transform.position + healthBarOffset;
 
-        if (transform.position.y < -75)
+        if (transform.position.y < -75 && isServer)
             RpcRespawn(color);
     }
 
@@ -71,7 +71,9 @@ public class PlayerHealth : NetworkBehaviour
         if (hasArmor){            currentArmor -= amount;        }
         else         {
             currentHealth -= amount;
-            owner.score += (int)amount;
+
+            if(amount > 0.9f)
+                owner.score += (int)amount;
         }
 
         if (currentHealth <= 0)
@@ -142,7 +144,7 @@ public class PlayerHealth : NetworkBehaviour
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
         }
-        transform.position = new Vector3(0.0f,100.0f,0.0f);
+        transform.position = new Vector3(0.0f,10.0f,400.0f);
 
         StartCoroutine(respawn(spawnPoint));
     }

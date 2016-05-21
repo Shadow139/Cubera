@@ -32,6 +32,8 @@ namespace UnityStandardAssets.Network
         public string playerName = "";
         [SyncVar(hook = "OnMyColor")]
         public Color playerColor = Color.white;
+        [SyncVar(hook = "OnMyMapId")]
+        public int mapId = 0;
 
 
         public Color OddRowColor = new Color(250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f, 1.0f);
@@ -314,6 +316,43 @@ namespace UnityStandardAssets.Network
 
             LobbyPlayerList._instance.RemovePlayer(this);
             if (LobbyManager.s_Singleton != null) LobbyManager.s_Singleton.OnPlayersNumberModified(-1);
+        }
+
+        public void sendMapChange(int id)
+        {
+            CmdChooseMap(id);
+        }
+
+        [Command]
+        void CmdChooseMap(int id)
+        {
+            mapId = id;
+        }
+        
+        public void OnMyMapId(int newMapId)
+        {
+            mapId = newMapId;
+            MapChooser map = GameObject.FindObjectOfType<MapChooser>();
+            map.changeMapVisuals(newMapId);
+
+            switch (newMapId)
+            {
+                case 0:
+                    //NetworkLobbyManager.singleton.onlineScene = "Main";
+                    break;
+                case 1:
+                    //NetworkLobbyManager.singleton.onlineScene = "MainTest";
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                default:
+                    //NetworkLobbyManager.singleton.onlineScene = "Main";
+                    break;
+            }
         }
     }
 }

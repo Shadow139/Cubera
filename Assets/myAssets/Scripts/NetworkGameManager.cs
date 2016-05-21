@@ -9,7 +9,9 @@ public class NetworkGameManager : NetworkBehaviour
 {
 
     public static List<CubeMovement> sPlayers = new List<CubeMovement>();
-    
+
+    public CanvasGroup m_FadingScreen;
+
     public Text[] playerNames;
     public Text[] playerScores;
     public Text[] playerKills;
@@ -22,6 +24,7 @@ public class NetworkGameManager : NetworkBehaviour
 
     void Start () {
         gameover = false;
+        StartCoroutine(ClientRoundStartingFade());
     }
 	
 	void Update () {
@@ -45,6 +48,8 @@ public class NetworkGameManager : NetworkBehaviour
 
         foreach (CubeMovement p in sPlayers)
         {
+            if (p == null) return;
+
             if (p.isLocalPlayer)
             {
                 playerNames[i].color = Color.yellow;
@@ -67,6 +72,33 @@ public class NetworkGameManager : NetworkBehaviour
 
             i++;
         }
+    }
+
+    private IEnumerator ClientRoundStartingFade()
+    {
+        float elapsedTime = 0.0f;
+        float wait = 1.0f;
+        m_FadingScreen.alpha = 1.0f;
+
+        CubeMovement.player.GetComponent<CubeMovement>().controlsLocked = true;
+        GameObject.FindGameObjectWithTag("TopPanel").GetComponent<UnityStandardAssets.Network.LobbyTopPanel>().isInLoadingScreen = true;
+
+        yield return new WaitForSeconds(5.0f);
+
+        CubeMovement.player.GetComponent<CubeMovement>().controlsLocked = false;
+        GameObject.FindGameObjectWithTag("TopPanel").GetComponent<UnityStandardAssets.Network.LobbyTopPanel>().isInLoadingScreen = false;
+
+        while (elapsedTime < wait)
+        {
+            m_FadingScreen.alpha = 1.0f - (elapsedTime / wait);
+
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+
+        m_FadingScreen.blocksRaycasts = false;
+        m_FadingScreen.alpha = 0.0f;
     }
 
     private class sort : IComparer<CubeMovement>

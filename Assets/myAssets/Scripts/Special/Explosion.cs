@@ -6,6 +6,8 @@ public class Explosion : NetworkBehaviour
 {
 
     public CubeMovement owner;
+    public Transform target;
+
     public GameObject explosionEffectPrefab;
 
     private Collider[] hitColliders;
@@ -14,24 +16,17 @@ public class Explosion : NetworkBehaviour
 
     void Start()
     {
-        Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
-        ExplosionWork(transform.position);
-        Destroy(gameObject);
-    }
-
-    void ExplosionWork(Vector3 explosionPoint)
-    {
         if (isClient)
         {
             GameObject[] gObjs = GameObject.FindGameObjectsWithTag("Player");
 
             float min = 99999.0f;
 
-            foreach(GameObject g in gObjs)
+            foreach (GameObject g in gObjs)
             {
                 float dist = Vector3.Distance(transform.position, g.transform.position);
 
-                if(dist < min)
+                if (dist < min)
                 {
                     min = dist;
                     owner = g.GetComponent<CubeMovement>();
@@ -39,6 +34,56 @@ public class Explosion : NetworkBehaviour
             }
         }
 
+        target = owner.gameObject.transform;
+        StartCoroutine(explosionCountdown());
+    }
+
+    void LateUpdate()
+    {
+        if (target != null)
+        {
+            transform.position = target.position;
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!isServer) return;
+
+        var hit = other.gameObject;
+
+        if (other.gameObject.CompareTag("Bullet"))
+        {
+            triggerExplosion();
+        }
+    }
+
+    private IEnumerator explosionCountdown()
+    {
+        yield return new WaitForSeconds(4.0f);
+        triggerExplosion();
+    }
+
+    [ClientRpc]
+    void RpcExplosionVisuals()
+    {
+        Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+    }
+
+    public void triggerExplosion()
+    {
+        if (isServer)
+        {
+            RpcExplosionVisuals();
+            Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        ExplosionWork(transform.position);
+        Destroy(gameObject);
+    }
+
+    void ExplosionWork(Vector3 explosionPoint)
+    {
         hitColliders = Physics.OverlapSphere(explosionPoint, blastRadius);
 
         foreach (Collider hitCol in hitColliders)

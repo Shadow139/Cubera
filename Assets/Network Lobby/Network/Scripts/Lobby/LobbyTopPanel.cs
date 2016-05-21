@@ -7,6 +7,7 @@ namespace UnityStandardAssets.Network
     public class LobbyTopPanel : MonoBehaviour
     {
         public bool isInGame = false;
+        public bool isInLoadingScreen = false;
 
         protected bool isDisplayed = true;
         protected Image panelImage;
@@ -19,7 +20,7 @@ namespace UnityStandardAssets.Network
 
         void Update()
         {
-            if (!isInGame)
+            if (!isInGame || isInLoadingScreen)
                 return;
 
             if (Input.GetKeyDown(KeyCode.Escape))

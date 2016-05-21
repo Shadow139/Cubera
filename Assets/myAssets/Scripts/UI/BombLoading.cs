@@ -14,9 +14,6 @@ public class BombLoading : MonoBehaviour {
     {
         if (playerScript == null)
             playerScript = CubeMovement.player.GetComponent<CubeMovement>();
-
-        if (playerScript != null)
-            loadingCircle.fillAmount = playerScript.getBombLoadingTime() / 4.0f;
-
     }
+
 }

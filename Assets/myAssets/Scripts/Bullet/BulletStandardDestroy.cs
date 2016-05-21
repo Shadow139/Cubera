@@ -35,6 +35,9 @@ public class BulletStandardDestroy : MonoBehaviour {
             p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;
 
             Instantiate(enemyHitEffectPrefab, transform.position, Quaternion.identity);
+
+            //hit.GetComponent<CubeMovement>();
+
             health.TakeDamage(damage,owner);
         }
         else

@@ -7,6 +7,12 @@ public class CubeMovement : NetworkBehaviour
 {
     public static GameObject player;
 
+    #region AudiClips
+    private AudioSource audio;
+    public AudioClip jumpSound;
+    public AudioClip rushSound;
+    #endregion
+
     #region Cameras
     public Camera cameraPrefab;
     public Camera miniMapPrefab;
@@ -29,7 +35,7 @@ public class CubeMovement : NetworkBehaviour
     public float jumpSpeed;
     public GameObject[] bulletPrefabs;
     public GameObject[] specialPrefab;
-
+    public bool controlsLocked = true;
     public int rollValue = 0;
     #endregion
 
@@ -50,9 +56,6 @@ public class CubeMovement : NetworkBehaviour
     private bool hasTurret = false;
     private float lastTurretShot = 0.0f;
     private float timeWithoutMovement = 0.0f;
-
-    private bool loadingBomb = false;
-    private float bombTimer = 0.0f;
     #endregion
 
     #region Network Synced
@@ -76,6 +79,7 @@ public class CubeMovement : NetworkBehaviour
         GameObject cubeIcon = (GameObject)Instantiate(cubeIconPrefab, transform.position, Quaternion.identity);
         cubeIcon.GetComponent<MeshRenderer>().material.color = color;
         cubeIcon.GetComponent<IconFollow>().followObject = this.gameObject;
+        audio = GetComponent<AudioSource>();
 
         if (isLocalPlayer)
             cubeIcon.SetActive(false);
@@ -84,7 +88,6 @@ public class CubeMovement : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         player = gameObject;
-
 
         Camera playerCamera = (Camera)Camera.Instantiate(cameraPrefab, new Vector3(0, 3.5f, -6.5f), Quaternion.AngleAxis(15, Vector3.right));
         playerCamera.gameObject.GetComponent<MouseCamera>().cameraPivot = transform;
@@ -103,6 +106,7 @@ public class CubeMovement : NetworkBehaviour
 
         if (!isLocalPlayer)     return;
         if (NetworkGameManager.gameover) return;
+        if (controlsLocked) return;
         
         if (hasShootingInput())
         {
@@ -116,12 +120,6 @@ public class CubeMovement : NetworkBehaviour
 
         if (hasSecondaryShootingInput() && hasSpecialSkill)
             checkSpecialSkill();
-
-        if (!hasSecondaryShootingInput())
-            loadingBomb = false;
-
-        if (!loadingBomb)
-            bombTimer -= Time.deltaTime;
 
         if (isGrounded && (Input.GetButton("Jump") || Input.GetAxis("LeftTrigger") > 0))
             Jump();
@@ -154,18 +152,13 @@ public class CubeMovement : NetworkBehaviour
 
         if (timeWithoutMovement > 5.0f)
             timeWithoutMovement = 5.0f;
-
-        if (bombTimer < 0.0f)
-            bombTimer = 0.0f;
-
-        if (bombTimer > 3.99f)
-            bombTimer = 4.0f;
     }
 
     void FixedUpdate()
     {
         if (!isLocalPlayer)     return;
         if (NetworkGameManager.gameover) return;
+        if (controlsLocked) return;
 
         float moveHorizontal = Input.GetAxis("Horizontal") * torque ;
         float moveVertical = Input.GetAxis("Vertical") * torque ;
@@ -297,15 +290,8 @@ public class CubeMovement : NetworkBehaviour
 
                 break;
             case 2:
-                if(bombTimer > 3.98f)
-                {
-                    CmdExplosion(rollValue);
-                    adjustSpecialSkill();
-                    bombTimer = 0.0f;
-                }
-
-                bombTimer += Time.deltaTime;
-                loadingBomb = true;
+                CmdExplosion(rollValue);
+                adjustSpecialSkill();
                 break;
             case 3:
                 CmdTurretship(rollValue);
@@ -341,12 +327,16 @@ public class CubeMovement : NetworkBehaviour
 
     void Jump()
     {
+        audio.clip = jumpSound;
+        audio.Play();
         isGrounded = false;
         rb.AddForce(Vector3.up * jumpSpeed);
     }
 
     void Tackle()
     {
+        audio.clip = rushSound;
+        audio.Play();
         isAbleToTackle = false;
         rb.AddTorque(rotateHorizontal * 20, ForceMode.Impulse);
         rb.AddForce(forwardForce * 15, ForceMode.Impulse);
@@ -593,12 +583,7 @@ public class CubeMovement : NetworkBehaviour
     {
         return timeWithoutMovement;
     }
-
-    public float getBombLoadingTime()
-    {
-        return bombTimer;
-    }
-
+    
     void OnDestroy()
     {
         if (mainCamera != null)

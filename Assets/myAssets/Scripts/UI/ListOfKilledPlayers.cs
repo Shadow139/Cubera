@@ -5,6 +5,9 @@ using System.Collections;
 public class ListOfKilledPlayers : MonoBehaviour {
 
     [SerializeField] private GameObject[] slots;
+    [SerializeField] private CanvasGroup fadingList;
+    private float elapsedTime = 0.0f;
+    private bool isDisplayingFade = false;
     private int index = 0;
 
     public void addDeadPlayerToList(string p1, string p2, Vector4 p1Col, Vector4 p2Col)
@@ -23,6 +26,10 @@ public class ListOfKilledPlayers : MonoBehaviour {
         {
             shiftList(p1, p2, p1Col, p2Col);
         }
+
+        elapsedTime = 0.0f;
+        if (!isDisplayingFade)
+            StartCoroutine(startFadingScreen());
 
         index++;
 
@@ -56,6 +63,29 @@ public class ListOfKilledPlayers : MonoBehaviour {
         txt_last[1].text = p2;
         txt_last[1].color = p2Col;
 
+    }
+
+    private IEnumerator startFadingScreen()
+    {
+        isDisplayingFade = true;
+        elapsedTime = 0.0f;
+        float wait = 5.0f;
+        fadingList.alpha = 1.0f;
+
+        yield return null;
+
+        while (elapsedTime < wait)
+        {
+            if(elapsedTime > 3.0f)
+                fadingList.alpha = 1.0f - (elapsedTime - 3.0f / wait - 3.0f);
+
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+
+        fadingList.alpha = 0.0f;
+        isDisplayingFade = false;
     }
 
 }
