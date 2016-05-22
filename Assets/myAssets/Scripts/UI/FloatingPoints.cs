@@ -7,13 +7,15 @@ public class FloatingPoints : MonoBehaviour {
     public Text damagePoints;
     public Text healingPoints;
     public Text armorPoints;
-    public Text rushPoints; 
+    public Text rushPoints;
+    public Text invisiblePoints;
     public Image killImage;
 
     private Animator damageAnim;
     private Animator healingAnim;
     private Animator armorAnim;
     private Animator rushAnim;
+    private Animator invisibleAnim;
     private Animator killAnim;
         
     void Start () {
@@ -28,6 +30,9 @@ public class FloatingPoints : MonoBehaviour {
 
         rushAnim = rushPoints.GetComponent<Animator>();
         rushPoints = rushPoints.GetComponent<Text>();
+
+        invisibleAnim = invisiblePoints.GetComponent<Animator>();
+        invisiblePoints = invisiblePoints.GetComponent<Text>();
 
         killAnim = killImage.GetComponent<Animator>();
 
@@ -56,6 +61,13 @@ public class FloatingPoints : MonoBehaviour {
         rushAnim.SetTrigger("damage");
         rushPoints.text = "+ " + (int)amount + " Second \n Super Rush";
     }
+
+    public void startInvisibleAnimation(float amount)
+    {
+        invisibleAnim.SetTrigger("damage");
+        invisiblePoints.text = "+ " + (int)amount + " Second \n Invisibility";
+    }
+
 
     public void startKillAnimation()
     {

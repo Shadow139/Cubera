@@ -22,7 +22,7 @@ public class InvisiblePack : NetworkBehaviour
                 if (health.isLocalPlayer)
                 {
                     var animation = GameObject.Find("UI").GetComponent<FloatingPoints>();
-                    animation.startArmorAnimation(amount);
+                    animation.startInvisibleAnimation(amount);
                 }
 
                 health.makeInvisible(amount);
