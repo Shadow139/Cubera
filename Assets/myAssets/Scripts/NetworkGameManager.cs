@@ -8,7 +8,7 @@ using System.Linq;
 public class NetworkGameManager : NetworkBehaviour
 {
 
-    public static List<CubeMovement> sPlayers = new List<CubeMovement>();
+    public static List<CubeMovement> sPlayers;
 
     public CanvasGroup m_FadingScreen;
 

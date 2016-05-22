@@ -11,6 +11,7 @@ public class CubeMovement : NetworkBehaviour
     private AudioSource audio;
     public AudioClip jumpSound;
     public AudioClip rushSound;
+    public AudioClip fireSound;
     #endregion
 
     #region Cameras
@@ -76,15 +77,21 @@ public class CubeMovement : NetworkBehaviour
     
     void Start()
     {
-        NetworkGameManager.sPlayers.Add(this);
         GetComponent<MeshRenderer>().material.color = color;
         cubeIcon = (GameObject)Instantiate(cubeIconPrefab, transform.position, Quaternion.identity);
         cubeIcon.GetComponent<MeshRenderer>().material.color = color;
         cubeIcon.GetComponent<IconFollow>().followObject = this.gameObject;
         audio = GetComponent<AudioSource>();
+        StartCoroutine(addToPlayerList());
 
         if (isLocalPlayer)
             cubeIcon.SetActive(false);
+    }
+
+    private IEnumerator addToPlayerList()
+    {
+        yield return new WaitForSeconds(4.0f);
+        NetworkGameManager.sPlayers.Add(this);
     }
 
     public override void OnStartLocalPlayer()
@@ -117,6 +124,8 @@ public class CubeMovement : NetworkBehaviour
             {
                 CmdFire(bullet,bulletOffset, bulletDirection, bulletScript.bulletSpeed);
                 lastShot = Time.time;
+                audio.clip = fireSound;
+                audio.Play();
             }
         }
 

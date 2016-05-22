@@ -33,6 +33,7 @@ public class BulletStandardDestroy : MonoBehaviour {
 
             ParticleSystemRenderer p = enemyHitEffectPrefab.GetComponent<ParticleSystemRenderer>();
             p.sharedMaterial.color = hit.GetComponent<MeshRenderer>().sharedMaterial.color;
+            //GetComponent<AudioSource>().Play();
 
             Instantiate(enemyHitEffectPrefab, transform.position, Quaternion.identity);
 
