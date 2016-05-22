@@ -103,7 +103,7 @@ public class MouseCamera : MonoBehaviour {
 
         if (!NetworkGameManager.gameover)
         {
-            if (Input.GetKeyDown(KeyCode.Escape) && !GameObject.FindGameObjectWithTag("TopPanel").GetComponent<UnityStandardAssets.Network.LobbyTopPanel>().isInLoadingScreen)
+            if ((Input.GetKeyDown(KeyCode.Escape) || Input.GetButtonDown("Start")) && !GameObject.FindGameObjectWithTag("TopPanel").GetComponent<UnityStandardAssets.Network.LobbyTopPanel>().isInLoadingScreen)
                 hideCursor = !hideCursor;
         }
 

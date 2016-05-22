@@ -35,8 +35,10 @@ public class CubeMovement : NetworkBehaviour
     public float jumpSpeed;
     public GameObject[] bulletPrefabs;
     public GameObject[] specialPrefab;
-    public bool controlsLocked = true;
+    public GameObject cubeIcon;
+    public bool controlsLocked = false;
     public int rollValue = 0;
+    public float rushCooldown = 5.0f;
     #endregion
 
     #region private
@@ -76,7 +78,7 @@ public class CubeMovement : NetworkBehaviour
     {
         NetworkGameManager.sPlayers.Add(this);
         GetComponent<MeshRenderer>().material.color = color;
-        GameObject cubeIcon = (GameObject)Instantiate(cubeIconPrefab, transform.position, Quaternion.identity);
+        cubeIcon = (GameObject)Instantiate(cubeIconPrefab, transform.position, Quaternion.identity);
         cubeIcon.GetComponent<MeshRenderer>().material.color = color;
         cubeIcon.GetComponent<IconFollow>().followObject = this.gameObject;
         audio = GetComponent<AudioSource>();
@@ -121,14 +123,14 @@ public class CubeMovement : NetworkBehaviour
         if (hasSecondaryShootingInput() && hasSpecialSkill)
             checkSpecialSkill();
 
-        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetAxis("LeftTrigger") > 0))
+        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Joystick1Button0) || Input.GetButtonDown("Jump"))) //  joystick button 4 LB
             Jump();
 
         if (Input.GetKeyDown(KeyCode.Backspace))
             toggleLethalBullets();
 
 
-        if (isAbleToTackle && (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetButton("Rush")))
+        if (isAbleToTackle && (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetButtonDown("Rush")))
             Tackle();
 
             switchCurrentBullet();
@@ -340,14 +342,30 @@ public class CubeMovement : NetworkBehaviour
         isAbleToTackle = false;
         rb.AddTorque(rotateHorizontal * 20, ForceMode.Impulse);
         rb.AddForce(forwardForce * 15, ForceMode.Impulse);
-        StartCoroutine(enableTackle(5.0f));
+        StartCoroutine(enableTackle(rushCooldown));
     }
 
     private IEnumerator enableTackle(float seconds)
     {
         GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().startCooldown();
+        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().rushBg.enabled = true;
+
         yield return new WaitForSeconds(seconds);
+
+        GameObject.FindGameObjectWithTag("RushPanel").GetComponent<RushPanel>().rushBg.enabled = false;
         isAbleToTackle = true;
+    }
+
+    public void startRushPowerUp(float seconds)
+    {
+        StartCoroutine(rushPowerUp(seconds));
+    }
+
+    private IEnumerator rushPowerUp(float seconds)
+    {
+        rushCooldown = 2.0f;
+        yield return new WaitForSeconds(seconds);
+        rushCooldown = 5.0f;
     }
 
     private IEnumerator disableTurret(float seconds)
@@ -371,6 +389,14 @@ public class CubeMovement : NetworkBehaviour
             bullet = 2;
         }
 
+        if (Input.GetButtonDown("RB")) // Right Button Xbox
+        {
+            bullet++;
+        }
+        if (Input.GetButtonDown("LB")) // Left Button Xbox
+        {
+            bullet--;
+        }
 
         if (Input.GetAxis("Mouse ScrollWheel") > 0) // forward
         {
@@ -435,7 +461,7 @@ public class CubeMovement : NetworkBehaviour
 
     bool hasSecondaryShootingInput()
     {
-        if (Input.GetButton("Fire2"))
+        if (Input.GetButtonDown("Fire2") || Input.GetAxis("LeftTrigger") > 0)
         {
             return true;
         }

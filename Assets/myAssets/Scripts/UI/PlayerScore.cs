@@ -13,7 +13,7 @@ public class PlayerScore : MonoBehaviour {
 	void Update () {
         if (isActiva)
         {
-            if (Input.GetKey(KeyCode.Tab))
+            if (Input.GetKey(KeyCode.Tab) || Input.GetButton("Back"))
             {
                 setActive(true);
             }

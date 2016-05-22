@@ -45,8 +45,6 @@ public class PlayerHealth : NetworkBehaviour
         if(healthBar != null)
             healthBar.transform.position = gameObject.transform.position + healthBarOffset;
 
-        if (transform.position.y < -75 && isServer)
-            RpcRespawn2();
     }
 
     void HealthStatus()
@@ -124,6 +122,17 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
 
+    public void makeInvisible(float amount)
+    {
+        if (!isServer)
+        {
+            return;
+        }
+
+        RpcMakeInvisible();
+        StartCoroutine(makeVisible(amount));
+    }
+
     [ClientRpc]
     void RpcRespawn(Vector4 col)
     {
@@ -143,31 +152,60 @@ public class PlayerHealth : NetworkBehaviour
             {
                 spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
             }
+
+            gameObject.GetComponent<CubeMovement>().rb.velocity = new Vector3(0, 0, 0);
         }
-        gameObject.GetComponent<CubeMovement>().rb.velocity = new Vector3(0, 0, 0);
-        transform.position = new Vector3(-350.0f,5.0f,400.0f);
+        transform.position = new Vector3(-0.0f,100.0f,0.0f);
 
         StartCoroutine(respawn(spawnPoint));
     }
 
     [ClientRpc]
-    void RpcRespawn2()
+    void RpcMakeInvisible()
     {
-        Vector3 spawnPoint = Vector3.zero;
+        if (!isLocalPlayer)
+        {
+            healthBar.SetActive(false);
+            Renderer rend = this.gameObject.GetComponent<Renderer>();
+            Renderer rendIcon = this.gameObject.GetComponent<CubeMovement>().cubeIcon.GetComponent<Renderer>();
+            rend.enabled = false;
+            rendIcon.enabled = false;
+        }
 
         if (isLocalPlayer)
         {
-            if (spawnPoints != null && spawnPoints.Length > 0)
-            {
-                spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-            }
+            Renderer mRend = this.gameObject.GetComponent<Renderer>();
+            Color transparentColor = mRend.material.color;
+            transparentColor.a -= 0.5f;
+            mRend.material.color = transparentColor;
+        }
+    }
+
+    private IEnumerator makeVisible(float amount)
+    {
+        yield return new WaitForSeconds(amount);
+        RpcMakeVisible();
+    }
+
+    [ClientRpc]
+    void RpcMakeVisible()
+    {
+        if (!isLocalPlayer)
+        {
+            healthBar.SetActive(true);
+            Renderer rend = this.gameObject.GetComponent<Renderer>();
+            Renderer rendIcon = this.gameObject.GetComponent<CubeMovement>().cubeIcon.GetComponent<Renderer>();
+            rend.enabled = true;
+            rendIcon.enabled = true;
         }
 
-        gameObject.GetComponent<CubeMovement>().rb.velocity = new Vector3(0, 0, 0);
-
-        transform.position = spawnPoint;
-
-
+        if (isLocalPlayer)
+        {
+            MeshRenderer mRend = this.gameObject.GetComponent<MeshRenderer>();
+            Color transparentColor = mRend.material.color;
+            transparentColor.a += 0.5f;
+            mRend.material.color = transparentColor;
+        }
     }
 
     [ClientRpc]
@@ -178,11 +216,14 @@ public class PlayerHealth : NetworkBehaviour
         GameObject.FindGameObjectWithTag("KillList").GetComponent<ListOfKilledPlayers>().addDeadPlayerToList(p1,p2,p1Col,p2Col);
 
     }
-
+    
     private IEnumerator respawn(Vector3 spawn)
     {
         Renderer rend = this.gameObject.GetComponent<Renderer>();
+        Renderer rendIcon = this.gameObject.GetComponent<CubeMovement>().cubeIcon.GetComponent<Renderer>();
         rend.enabled = false;
+        rendIcon.enabled = false;
+
         yield return new WaitForSeconds(5.0f);
         transform.position = spawn;
         healthBar.SetActive(true);
@@ -191,6 +232,7 @@ public class PlayerHealth : NetworkBehaviour
             GameObject.FindGameObjectWithTag("PlayerCamera").GetComponent<MouseCamera>().setCameraPivot(transform);
 
         rend.enabled = true;
+        rendIcon.enabled = true;
     }
 
     void OnChangedHealth(float newValue)

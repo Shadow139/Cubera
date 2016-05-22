@@ -23,7 +23,7 @@ namespace UnityStandardAssets.Network
             if (!isInGame || isInLoadingScreen)
                 return;
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetButtonDown("Start"))
             {
                 ToggleVisibility(!isDisplayed);
             }

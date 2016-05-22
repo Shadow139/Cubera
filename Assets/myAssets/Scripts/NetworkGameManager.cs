@@ -21,14 +21,14 @@ public class NetworkGameManager : NetworkBehaviour
 
     private float lastListUpdate = 0.0f;
 
+    void Awake()
+    {
+        sPlayers = new List<CubeMovement>();
+    }
 
     void Start () {
         gameover = false;
         StartCoroutine(ClientRoundStartingFade());
-    }
-	
-	void Update () {
-        
     }
 
     void FixedUpdate()
