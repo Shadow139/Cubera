@@ -23,16 +23,12 @@ public class RollLoading : MonoBehaviour {
 
             if(time > 0.5)
             {
-                //loadingCircle.enabled = true;
-                //loadingBG.enabled = true;
                 cg.alpha = 1.0f;         
                 changeSpecialIcon(playerScript.roll());
             }
             else if(time < 0.5)
             {
                 cg.alpha = 0f;
-                //loadingCircle.enabled = false;
-                //loadingBG.enabled = false;
             }
 
             loadingCircle.fillAmount = time / 3.5f;
