@@ -35,7 +35,7 @@ public class RollLoading : MonoBehaviour {
                 //loadingBG.enabled = false;
             }
 
-            loadingCircle.fillAmount = time / 5.0f;
+            loadingCircle.fillAmount = time / 3.5f;
 
         }
 

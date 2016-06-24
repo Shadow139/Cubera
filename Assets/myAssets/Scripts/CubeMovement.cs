@@ -153,7 +153,7 @@ public class CubeMovement : NetworkBehaviour
             timeWithoutMovement = 0.0f;
         }
         
-        if (hasStopped() && timeWithoutMovement > 4.99f)
+        if (hasStopped() && timeWithoutMovement > 3.49f)
         {
             rollNewSpecial();
         }
@@ -161,8 +161,8 @@ public class CubeMovement : NetworkBehaviour
         if (hasTurret && hasShootingInput())
             fireTurret();
 
-        if (timeWithoutMovement > 5.0f)
-            timeWithoutMovement = 5.0f;
+        if (timeWithoutMovement > 3.5f)
+            timeWithoutMovement = 3.5f;
     }
 
     void FixedUpdate()
