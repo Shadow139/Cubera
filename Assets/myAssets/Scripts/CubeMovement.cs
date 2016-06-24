@@ -497,7 +497,7 @@ public class CubeMovement : NetworkBehaviour
         }    
     }
 
-    int roll()
+    public int roll()
     {
         if (transform.up.y > 0.89f)
         {
